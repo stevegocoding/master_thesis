@@ -1,0 +1,9 @@
+# Folders
+notes/tmp
+
+# LaTeX temp files 
+*.aux
+*.log
+*.synctex
+*.synctex.gz
+*.pdf
