@@ -1,0 +1,116 @@
+\documentclass[12pt]{report}
+\usepackage{cuthesis}
+\usepackage{amsmath}
+\usepackage[font=small,format=plain,labelfont=bf,up,textfont=up]{caption}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{courier}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{verbatim}
+\usepackage[toc, page]{appendix}
+
+\author{Guangfu Shi}
+\title{Interactive Global Illumination Techniques Using GPU}
+\degree{Master of Computer Science}
+\dept{Computer Science}       					% default is Comp.Sci.
+%\cosupervisor{Dr. Thomas Fevens}                   	% if you also have a co-supervisor
+
+
+% Source Code Formatting
+\lstset{
+         %basicstyle=\footnotesize\ttfamily, % Standardschrift
+         basicstyle=\small\ttfamily,
+         %numbers=left,               % Ort der Zeilennummern
+         numberstyle=\tiny,          % Stil der Zeilennummern
+         %stepnumber=2,               % Abstand zwischen den Zeilennummern
+         numbersep=5pt,              % Abstand der Nummern zum Text
+         tabsize=2,                  % Groesse von Tabs
+         extendedchars=true,         %
+         breaklines=true,            % Zeilen werden Umgebrochen
+         keywordstyle=\color{red},
+         %frame=t|b,         
+ %        keywordstyle=[1]\textbf,    % Stil der Keywords
+ %        keywordstyle=[2]\textbf,    %
+ %        keywordstyle=[3]\textbf,    %
+ %        keywordstyle=[4]\textbf,   \sqrt{\sqrt{}} %
+         stringstyle=\color{white}\ttfamily, % Farbe der String
+         showspaces=false,           % Leerzeichen anzeigen
+         showtabs=false,             % Tabs anzeigen ?
+         xleftmargin=17pt,
+         framexleftmargin=17pt,
+         framexrightmargin=5pt,
+         framexbottommargin=4pt,
+         %backgroundcolor=\color{lightgray},
+         showstringspaces=false      % Leerzeichen in Strings anzeigen ? 
+         captionpos=b
+ } 
+
+
+%---- Set figures path ----
+\graphicspath{{C:/Users/lenovo/thesis/working/thesis/graphics/}}
+
+\begin{document}
+
+\begin{abstract}
+  Text of abstract.  
+\end{abstract}
+
+\begin{acknowledgments}
+  Text of acknowledgments.
+\end{acknowledgments}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Body of Thesis goes here.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Set the page numbering style
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+%------------------------
+% Chapter 1 : Introduction
+\include{ch1}
+
+%-------------------------
+% Chapter 2:  Background: 
+%- Rendering equation. 
+%- LTE equation 
+%- BRDF 
+%- Monte-Carlo Ray Tracing. 
+%- Russian roulette
+\include{ch2}
+
+%-------------------------
+% Chapter 3: Global Illumination and Photon-mapping using GPU 
+%- KD-Tree Construction and representation on GPU
+%- Photons KNN search using KD-Tree
+%- Selective sampling 
+\include{ch3}
+
+%-------------------------
+% Chapter 4: Performance Measurement 
+\include{ch4}
+
+%-------------------------
+% Chapter 5: Implementation and Result 
+\include{ch5}
+
+
+%o-------------------------
+% Chapter 6: Conclusion
+\include{ch6}
+
+
+%-------------------------
+% Appendix 
+%\include{appendix}
+%-------------------------
+
+%\bibliography{C:/Users/lenovo/thesis/working/thesis/bib/refdb}                         %place your .bib files here
+%\bibliographystyle{ieeetr}               %the bibliography style to use
+%\bibliography{refdb}
+
+\end{document}
