@@ -1,0 +1,61 @@
+\chapter{Background}
+
+\section{Theoretical Background}
+
+To establish the mathematics basis and mental model of the problem, some essential conceptions in Computer Graphics are going to be introduced in this chapter.  
+
+\subsection{Radiometry Introduction}
+Radiometry is the basic terminology to describe light which is crucial to simulation. First of all, some basic quantities have to be introduced, the related symbols are going to be defined here as well for further use.
+
+
+\begin{table}[!ht]
+\begin{center}
+	\begin{tabular}{ | l | l | l |}     	
+	\hline 
+
+	Symbol & Quantity & Unit \\
+
+	% \(Q_{\lambda}\) 	& 		Spectral radiant energy 		& 		\(J nm^{-1} \) \\
+	\(Q\) 			& 		Radiant Energy 				& 		\(j\) \\ 
+	\(\Phi\) 			& 		Radiant flux 					& 		\(W\) \\ 
+	\(I\) 			& 		Radiant intensity 				& 		\(W sr^{-1}\) \\
+	\(E\)			&		Irradiance (incident) 			&		\(W m^{-2}\) \\  
+	\(L\)			&		Radiance						&		\(W m^{-2} sr^{-1}\) \\ 
+	
+	\hline
+
+	\end{tabular}
+\end{center} 
+\caption{Radiometric symbols, names and units.}
+\label{tab:radiometry_quantities}
+\end{table}
+
+\emph{Radiant energy}, \(Q\), is the energy of a collection of photons which is the basic quantity in lighting. \emph{Radiant flux} , \(\Phi\), is the time rate of the flow of radiant energy: 
+
+\begin{equation}
+\Phi = \frac{dQ}{dt}
+\end{equation}
+
+\emph{Irradiance}, \(E\), is the incident (arriving at a surface location) \emph{radiant flux area density}, which is defined as the differential flux per differential area. 
+
+\begin{equation}
+E(x) = \frac{d\Phi}{dA}
+\end{equation}
+
+\emph{Radiance}, \(L\), is the radiant flux per unit solid angle per unit projected area: 
+
+\begin{equation}
+L(x, \overrightarrow{\omega}) = \frac{d^{2}\Phi}{\cos{\theta} \cdot dA \cdot d\overrightarrow{\omega}}
+\end{equation}
+
+Where \(x\) is the position and \overrightarrow{\omega} is the direction. 
+
+
+
+
+ 
+
+
+
+
+
