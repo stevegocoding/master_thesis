@@ -15,7 +15,7 @@
 \author{Guangfu Shi}
 \title{Efficient Global Illumination Techniques On GPU}
 \degree{Master of Computer Science}
-\dept{Computer Science}       					% default is Comp.Sci.
+\dept{Computer Science}       						% default is Comp.Sci.
 %\cosupervisor{Dr. Thomas Fevens}                   	% if you also have a co-supervisor
 
 
@@ -35,7 +35,7 @@
  %        keywordstyle=[1]\textbf,    % Stil der Keywords
  %        keywordstyle=[2]\textbf,    %
  %        keywordstyle=[3]\textbf,    %
- %        keywordstyle=[4]\textbf,   \sqrt{\sqrt{}} %
+ %        keywordstyle=[4]\textbf,   \sqrt{\sqrt{}} %	
          stringstyle=\color{white}\ttfamily, % Farbe der String
          showspaces=false,           % Leerzeichen anzeigen
          showtabs=false,             % Tabs anzeigen ?
@@ -50,7 +50,7 @@
 
 
 %---- Set figures path ----
-\graphicspath{{C:/Users/lenovo/thesis/working/thesis/graphics/}}
+\graphicspath{{C:/Users/steve-laptop-M4600/develop/projects/master_thesis/thesis/imgs/}}
 
 \begin{document}
 
@@ -69,9 +69,9 @@
 % Set the page numbering style
 \pagenumbering{arabic}
 \setcounter{page}{1}
-
+	
 %------------------------
-% Chapter 1 : Introduction	(1 p)
+% Chapter 1 : Introduction	(2 p)
 \include{ch1}
 
 %-------------------------
@@ -85,19 +85,20 @@
 \include{ch2}
 
 %-------------------------
-% Chapter 3: Global Illumination and Photon-mapping using GPU 	(~7 p) 
+% Chapter 3: Global Illumination and Photon-mapping using GPU 	(~10 p) 
 %- KD-Tree Construction and representation on GPU
 %- Photons KNN search using KD-Tree
 %- Selective sampling 
+%- New algorithm: localized update the photons 
 \include{ch3}
 
 %-------------------------
-% Chapter 4: Performance Measurement 
+% Chapter 4: Performance Measurement (5 p) 
 \include{ch4}
 
 %-------------------------
-% Chapter 5: Result and Analysis 	(~15 p)
-\include{ch5}
+% Chapter 5: Result and Analysis 	(~18	 p)
+\include{ch5}	
 
 %o-------------------------
 % Chapter 6: Conclusion		(~2 p)

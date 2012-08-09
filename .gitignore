@@ -6,8 +6,8 @@ notes/tmp
 *.log
 *.synctex
 *.synctex.gz
-*.pdf
 *.toc
 *.lof
 *.lot
 *.jpg
+main.pdf
