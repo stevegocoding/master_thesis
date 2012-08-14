@@ -1,13 +1,13 @@
 \chapter{Background}
 
-\section{Theoretical Background}
-
 To establish the mathematics basis and mental model of the problem, some essential conceptions in Computer Graphics are going to be introduced in this chapter.  
 
-\subsection{Radiometry Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Radiometry Introduction}
 Radiometry is the basic terminology to describe light which is crucial to simulation. First of all, some basic quantities have to be introduced, the related symbols are going to be defined here as well for further use.
 
-\paragraph{Important Quantities} 
+\subsection{Important Quantities} 
 
 \begin{table}[!ht]
 \begin{center}
@@ -76,20 +76,76 @@ The solid angle used in equation \ref{eq:flux_from_radiance} can be thought as r
 
 \begin{figure}[htp] 
     \centering 
-    \fbox{\includegraphics[width=\linewidth]{radiance_solid_angle.pdf}}
+    \fbox{\includegraphics{radiance_solid_angle.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[]{Radiance, L, is defined as the radiant flux per unit solid angle, \(\overrightarrow{\omega}\), per unit projected area, \(dA\)}
     \label{fig:radiance_solid_angle} 
 \end{figure} 
 
-\paragraph{Light Emission}
+\subsection{Light Source}
+The light in the form of photons is emitted from light sources. We can measure the intensity of light source in \emph{wattage}. Take a point light source for example, the power this light can emit is denoted by \(\Phi\), the emitted light distribute uniformly in all directions, the irradiance, \(E\), can be computed at a surface as: 
 
-\paragraph{}
+\begin{equation}
+E(x) = \frac{\Phi \cos{\theta}}{4\pi r^{2}} 
+\end{equation}
+
+Where \(r\) is the distance from \(x\) to the light source and \(\theta\) is the angle between the surface normal and the direction to the light source. From the equation we can intuitively tell a surface facing the source will receive more photons per area than a surface that is oriented differently.   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\section{Render Equation}
+With the physically-based model of lighting, a theoretical framework describing the interaction between light and an surface will be introduced in this section. 
 
+\begin{figure}[htp] 
+    \centering 
+    \fbox{\includegraphics{brdf.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[]{The geometric setup of BRDF. }
+    \label{fig:brdf} 
+\end{figure} 
 
+The \emph{Bidirectional Reflectance Distribution Function}, BRDF, is the mathematic tool describing the reflectiona of light encounters an surface. To define the BRDF, the geometric configuration is shown in figure \ref{fig:brdf}. \(\omega_{i}\) is the incident lighting direction, \(\omega_{o}\) is the direction in which the reflected light leaving from the surface, \(n\) is the normal vector at the location \(p\) on the surface. Given the incident radiance \(L_{i}(p, \omega_{i})\), we are finding out the outgoing radiance to the viewer, \(L_{o}(p, \omega_{o})\). 
 
+The BRDF, \(f_{r}\), defines the relationship between differential reflected radiance and differential irradiance: 
 
+\begin{equation}
+f_{r} = \frac{dL_{o}(p, \omega_{o})}{dE(p, \omega_{i})} = \frac{dL_{o}(p, \omega_{o})}{L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega{i}}
+\label{eq:brdf}
+\end{equation} 
+
+There are two important properties of BRDF used in rendering. The first one is the Helmholtz's law of reciprocity, that is given any pair of directions \( (\omega_{i}, \omega_{o} ) \), we have: 
+
+\begin{equation}
+f_{r}(p, \omega_{i}, \omega_{o}) = f_r(p, \omega_{o}, \omega_{i})
+\end{equation}
+
+Another important physical property of BRDF is energy conservation, stating that the total reflected energy is less than or equal to the incident energy. For all direction \( \omega_{o} \).
+
+\begin{equation}
+ \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i} \leq 1 , \forall \omega_{i}
+\end{equation}
+
+Given the definition of BRDF, we can introduce the basic render equation, also known as \emph{local illumination model} by integrating the equation \ref{eq:brdf} over the sphere of incident directions around location \(p\), the left side of the equation will be the outgoding radiance in direction \(\omega_{o}\).
+
+\begin{equation}
+L_{o}(p, \omega_{o}) = \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i}
+\label{eq:local_render_equation}
+\end{equation}
+
+Where \(\Omega\) is the hemisphere of incoming directions at \(p\).
+
+\paragraph{Light Transport Equationa} 
+
+The local illumiation model is used to describe the direct lighting effect which is too simple for simulating real-world lighting effect, indirect lighting has to be introduced to this model as well. Therefore we introduce the Light Transport Equation (LTE) in this section to form the mathematical basis for all global illumination algorithms, The LTE states the necessary conditions for equilibrium of light transport in the scene without participating media. 
+
+\begin{equation}
+L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i}
+\label{eq:lte}
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Monte-Carlo Ray Tracing} 
 
 
