@@ -137,15 +137,63 @@ Where \(\Omega\) is the hemisphere of incoming directions at \(p\).
 
 \paragraph{Light Transport Equationa} 
 
-The local illumiation model is used to describe the direct lighting effect which is too simple for simulating real-world lighting effect, indirect lighting has to be introduced to this model as well. Therefore we introduce the Light Transport Equation (LTE) in this section to form the mathematical basis for all global illumination algorithms, The LTE states the necessary conditions for equilibrium of light transport in the scene without participating media. 
+The local illumiation model is used to describe the direct lighting effect which is too simple for simulating real-world lighting effect, indirect lighting has to be introduced to this model as well. Therefore we introduce the Light Transport Equation (LTE) in this section to form the mathematical basis for all global illumination algorithms, The LTE states the necessary conditions for equilibrium of light transport in the scene without participating media and it is often used in global illumination algorithms such as Monte-Carlo ray-tracing (section \ref{sec:mc_rt} and Photon-Mapping. 
 
 \begin{equation}
 L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i}
 \label{eq:lte}
 \end{equation}
 
+\( L_{o}(p, \omega_{o}) \), the outgoing radiance at any surface location in a model, is the sum of the emitted radiance, \( L_{e}(p, \omega_{o}) \) and the reflected radiance. 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Monte-Carlo Ray Tracing} 
+\label{sec:mc_rt}
+
+
+\subsection{Classic Ray Tracing}
+
+Ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -10,4 +10,6 @@ notes/tmp
 *.lof
 *.lot
 *.jpg
+*.bbl
+*.blg
 main.pdf
