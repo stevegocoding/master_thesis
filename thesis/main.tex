@@ -11,6 +11,8 @@
 \usepackage[ruled,vlined]{algorithm2e}
 \usepackage{verbatim}
 \usepackage[toc, page]{appendix}
+\usepackage{cite}
+
 
 \author{Guangfu Shi}
 \title{Efficient Global Illumination Techniques On GPU}
@@ -68,42 +70,43 @@
 
 % Set the page numbering style
 \pagenumbering{arabic}
-\setcounter{page}{1}t
+\setcounter{page}{1}
 	
 %------------------------
 % Chapter 1 : Introduction	(2 p)
 \include{ch1}
 
 %-------------------------
-% Chapter 2:  Background	(~15 p)
+% Chapter 2:  Background	(~20 p)
+
+% Theoretical 
 %- Radiometry Introduction.
 %- BRDF 	
 %- Rendering equation and LTE equation
 %- Monte-Carlo Ray Tracing. 
-%- Russian roulette
+%- Path Tracing 
+%- Photon Mapping
+
+% Technical 
+%- KD-Tree Construction and representation on GPU
+%- Photons KNN search using KD-Tree   
 \include{ch2}
 
 %-------------------------
-% Chapter 3: Global Illumination and Photon-mapping using GPU 	(~10 p) 
-%- KD-Tree Construction and representation on GPU
-%- Photons KNN search using KD-Tree  
+% Chapter 3: New Approach (~10 p)
 \include{ch3}
 
 %-------------------------
-% Chapter 4: New algorithm: localized update the photons	(5 p) 
-\include{ch4}
-
-%-------------------------
 % Chapter 5: Result and Analysis 	(~15 p)
-\include{ch5}	
+\include{ch4}	
 
 %o-------------------------
 % Chapter 6: Conclusion		(~2 p)
-\include{ch6}		
+\include{ch5}		
 
 %-------------------------
 % Appendix 
-%\include{appendix}				
+\include{appendix}				
 %-------------------------
 
 %place your .bib files here

@@ -93,7 +93,6 @@ Where \(r\) is the distance from \(x\) to the light source and \(\theta\) is the
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 \section{Render Equation}
 With the physically-based model of lighting, a theoretical framework describing the interaction between light and an surface will be introduced in this section. 
 
@@ -151,46 +150,96 @@ L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, 
 \section{Monte-Carlo Ray Tracing} 
 \label{sec:mc_rt}
 
-
 \subsection{Classic Ray Tracing}
 
-Ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}.
+Ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}. It is an elegent and simple algorithm for easily rendering shadows and specular surfaces. 
+
+The ray tracing algorithm can be broke down into two stages: intersection query and shading. In the first stage, as shown in figure \ref{fig:ray_tracing}, for each pixel on our viewing plane, one of more rays (if the multi-sampling is enabled for better image quality) are shot into the scene, these rays directly from the observer are \emph{primary rays}. Then we are trying to find intersection points with the closest object to observer. In the shading stage, at each intersection point the direct illumination is computed based on the BRDF determined by the surface material, the computed radiance is converted to the color of the corresponding pixel. The visibility of the light sources can be evaluated with shadow rays. If the surface material is specular then a specular ray is traced in the reflected or transmitted direction. The indirect illumination can be computed by spawning and tracing reflected or refracted rays (called \emph{secondary rays}) from the intersection points and repeate the ray tracing recursively. 
+
+\begin{figure}[htp] 
+    \centering 
+    \fbox{\includegraphics{ray_tracing.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[]{Ray Tracing.}
+    \label{fig:ray_tracing} 
+\end{figure} 
+
+Ray tracing is not a full global illumination algorithm since it cannot handle the computation of the indirect illumination on diffuse surfaces, it can only compute the illumination for perfect specular material by tracing a ray in the refracted or mirror direction. To simulate the phenomena such as soft shadows, it is necessary to employ Monte-Carlo sampling techniques. 
+
+\subsection{Monte-Carlo Methods}
+
+\subsubsection{Monte-Carlo Integration} 
+Monte-Carlo integration is a method for using random sampling to estimate the values of integrals. In order to estimate the value of integtral \( \int f(x)dx \) one needs only to be able to evalueate the integrand at arbitrary points in the domain. 
+
+\subsubsection{Monte-Carlo Estimator} 
+The Monte-Carlo estimator approximates the value of an arbitrary integral. Suppose \( \int_{a}^{b}f(x)dx \) is an one-dimensional integral we want to evaluate, given a suply of uniform random variables \( X_{i} \in [a, b] \), we can define the Monte-Carlo estimator: 
+\begin{equation}
+F_{N} = \frac{b-a}{N}\sum_{\substack{0<i<N}}f(X_{i})
+\end{equation}
+
+and the expected value of \(F_{N}\), \(E[F_{N}]\), is in fact equal to the integral. This fact taks just a few steps to be demonstrated (see p. 541-542 in \cite{Pharr:2010:PBR:1854996}). 
+
+\subsubsection{Application In Rendering} 
+In rendering task there are many integrals that are difficult to directly evaluate. For example, as shown in equation \ref{eq:local_render_equation}, computing the amount of light reflected by a surface at a point, we have to integrate the product of the incident radiance and the BRDF over the unit sphere. Since the object visibility and thus the incident radiance function at an arbitrary point varies and difficult to predict, Monte-Carlo makes it possible to estimate the reflected radiance by sampling the a set of directions over the sphere, computing the radiance for them, multiplying by the BRDF's value for those functions and applying a weighting term. 
+
+Monte-Carlo ray tracing has several advantage over classic ray tracing: 
+
+\begin{itemize} 
+
+\item All global illumination effects can be simulated.
+
+\item Low memory consumption. 
+
+\item Result is correct exception for variance (visible as noise). 
+
+\end{itemize} 
+
+The main disadvantage of Monte-Carlo method is that it requires huge amount of samples to minimize the errors. In order to reduce the errors in half, it requires evaluation of four times as many samples. 
+
+\subsubsection{Multiple Importance Sampling} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Other Global Illumination Algorithm}  
+ 
+In this section, we will make a short survey on two of most popular global illumination algorithm: Path Tracing and Photon Mapping. 
+
+\subsection{Path Tracing}
 
 
+\subsection{Photon Mapping}
+
+\subsubsection{Concept} 
+
+Photon mapping was developed by Jensen \cite{HenrikWannJensen2004} as an efficient alternative to the Monte-Carlo ray tracing tecnniques especially for simulating the focused light effects, such as caustics. Photon mapping is a two-pass algorithm, photon tracing and radiance estimation. 
+
+\paragraph{Photon Tracing} 
+Photon tracing is the process of shooting photons from the light sources and tracing them into the scene similar to stardard ray tracing, a global data structure constructed to store the photons is called photon map. When a photon hits a diffuse surface, its position, incident direction and power will be stored in the photon map. Jenson suggests that using balanced kd-tree data structure to organize the photons data, since the kd-tree is beneficial to the next pass, radiance estimate. Whether the photon is absorbed or reflected is determined by the surface's BRDF. Photons that hits the specular surface will not be stored because the probability of have a incoming photons from specular direction is zero. Instead, these surfaces are rendered using standard ray tracing. 
+
+\paragraph{Radiance Estimate}
+Given the photon map, we can perform density estimate on certain surface point to calculate reflected radiance. The direct illumination and specular surfaces can be rendered using Monte-Carlo ray tracing. As shown in figure \ref{fig:photon_density_estimate}, we collecting \(n\) photons samples within the a sphere make the estimate of the reflected radiance at any surface location \(x\), as shown in equation \ref{eq:photon_estimate}. 
+
+\begin{equation}
+L_r(x, \omega_{o}) \approx \frac{1}{\pi r^{2}}\sum_{\substack{0<p<N}}f_{r}(x, \omega_{p, o}, \omega_{i})\Delta \Phi_{p}(x,\omega_{p, o}) 
+\label{eq:photon_estimate}
+\end{equation} 
+
+\begin{figure}[ftp] 
+    \centering 
+    \fbox{\includegraphics{photon_density_estimate.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[]{Photon density estimate.}
+    \label{fig:photon_density_estimate} 
+\end{figure} 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Photon Mapping On GPU} 
 
+\subsection{KD-Tree Construction}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\subsection{K Nearest Neighbor Search Using GPU}
 
 
 
