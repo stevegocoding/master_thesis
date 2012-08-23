@@ -11,6 +11,7 @@ notes/tmp
 *.lot
 *.jpg
 *.png
+*.svg
 *.bbl
 *.blg
 main.pdf
