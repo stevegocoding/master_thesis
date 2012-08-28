@@ -62,9 +62,10 @@ The kd-tree data should be carefully organized when implemented with CUDA to imp
 
 The final node list generated when the kd-tree is built is not sufficient for fast traversal algorithm, it contains too much useless information and will hit the performance since it is not friendly to cache prefetch. Therefore we compress and re-organize the traversal related data of the kd-tree nodes to reduce the memory access. The entire kd-tree is stored in a structure of several contiguous arrays. The structure is defined as following:  
 
+% Code Snippet
 \lstinputlisting{kdtree_data_def.cpp} 
 
-of unsigned integer and is organized in pre-order, as shown in the following figure: 
+The traversal data is compressed into an unsigned integer array, as shown in the following figure: 
 
 \begin{figure}[htp] 
     \centering 
@@ -74,19 +75,34 @@ of unsigned integer and is organized in pre-order, as shown in the following fig
     \label{fig:kdtree_data_memory_layout} 
 \end{figure}  
 
-The whole left subtree is stored before right child and its subtree due to the pre-order traversal, this memory layout improves the cache performance. 
+Where root\_info, left\_info and right\_info are the parent information for the root, left and right child node(if left and right node are inner nodes). This is a compressed form of what is needed during kd-tree traversal. Parent information stores two unsigned integers, hence two elements in the d\_preorder\_tree array. The first unsigned integer contains several information of the inner node: the split axis takes 2 most significant bits and address of right node in the d\_preorder\_tree array, which is 0 if it is a leaf node, take the rest bits. The second unsigned integer stores the split position(a float value stored as unsigned integer). The address of left child node is not stored explicitly as it can be computed by skipping the parent info(2 unsigned integers) from current node's address. The 2 bits for split axis can represent \(x\) axis if it is 0, \(y\) axis if it is 1 and \(z\) axis if it is 2. 
 
+Where the root\_idx, left\_idx and right\_idx are the indices of the root, left and right nodes. The indices can be used to access the other arrays such as the node extents array. The type information of the nodes is also encoded in the indices, if it is a leaf node, the most significant bit(MSB) is set, else the MSB is not set, this improves leaf detection performance because it avoids reading child information. The above format applies only for inner nodes, for leafs, instead of parent information, element count and element indices are stored. The element indices are relative to the underlying triangle data. Hence we have the following format: 
+
+\begin{figure}[htp] 
+    \centering 
+    \fbox{\includegraphics{kdtree_data_memory_layout_2.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[]{Compacted kd-tree data memory layout.}
+    \label{fig:kdtree_data_memory_layout} 
+\end{figure}  
 
 \paragraph{Photons Data} 
 
 
-\subsection{GPU memory management}
+\paragraph{Connection Between KD-Tree and Photons Data} 
 
+The connection between KD-Tree leaf nodes and photons data is stored as a structure of several data array like storing other type of data on GPU side. 
 
-\paragraph{GPU Texture Memory VS Global Memory} 
+\subsection{Algorithm Description} 
 
+\subsubsection{Construction} 
 
-\paragraph{Shared Memory} 
+\begin{algorithm}[H]
+	
+	\caption{Classify photons to kd-tree leafs. }
+	\label{algo:build_kdleaf_photons}
+\end{algorithm}
 
 
 
