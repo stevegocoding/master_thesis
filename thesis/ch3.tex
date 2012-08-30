@@ -54,7 +54,8 @@ Rendering with our data structure does not differ from the standard photon mappi
 \section{Implementation Details} 
 \label{sec:impl_detials} 
 
-\subsection{Data Organization}
+\subsection{Data Organization} 
+\label{subsec:data_org}
 
 \paragraph{KD-Tree Data} 
 
@@ -99,12 +100,55 @@ The connection between KD-Tree leaf nodes and photons data is stored as a struct
 \subsubsection{Construction} 
 
 \begin{algorithm}[H]
+	\SetAlgoLined
+	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+	\Input{KD-Tree Data} 
+	\Input{Photons Data} 
+	\Output{KD Leaf Nodes Photons List} 
+
+	\( leafNodesMarks \leftarrow new\ array  \) \\
+	\( leafNodesIndices \leftarrow new\ array  \) \\
+	\( identityIndices \leftarrow (0, 1, 2 ... n) \) \\ 
+
+	\For{All nodes of KD-Tree in parallel} {
+		\( leafNodesMarks \leftarrow mark\ leaf\ nodes  \) \\
+	}
+
+	\( leafNodesIndices \leftarrow new\ array  \) \\
+	\(tempArray \leftarrow \) Multiply \(identityIndices\) and \(leafNodesMarks\)
+	\( leafNodesIndices \leftarrow \) Compact \( tempArray \)
+	 
+	\For{All KD-Tree leaf nodes in parallel} {
+		\For{All photons of current frmae in serial} {
+			Perform point-box intersection detection. \\ 
+			Store indices of photons 
+		}
+	}
 	
-	\caption{Classify photons to kd-tree leafs. }
-	\label{algo:build_kdleaf_photons}
+	\For{All leaf nodes of KD-Tree in parallel} {
+		\If{frame counter \(<\) max frames} {
+			Store photons indices of current frame with current end pointer. 
+		}
+
+		Update start and end pointer for current leaf node.
+	}
+	
+	\caption{Classify photons to kd-tree leafs. } 	
+	\label{algo:build_kdleaf_photons} 
 \end{algorithm}
 
+ \vspace{20pt}
 
+In algorithm \ref{algo:build_kdleaf_photons}, it takes two major pieces of input data, the kd-tree data constructed for the scene and the photons data shot in the scene. The photons data is updated every frame by inserting new photons to an big chunk of buffer resides in GPU memory. Similar to the organization of underlying triangle data for kd-tree nodes, the memory for each frame of photons is aligned to a fixed size to enable coalesced memory access which may improve the performance considerably. This is one of the most important good practices for CUDA programming, because if the threads in a block are aceessing consecutive memory locations, then all the accesses are combined into a single request by the hardware. However organizing data in this way will bring extra complexity for implementation because we have to keep track of the locations of beginning of next valid chunk of data for data accessing and there will be holes contained in the whole data array. 
+
+We firstly mark the leaf nodes from the input kd-tree data, given the data definition described in the section \ref{subsec:data_org}, we only need to look at alll the nodes and test if the MSB of the node's index is set. The indices of nodes can be retrieved from the kd-tree data. We store the result of marks in an array with the same number of elements as number of kd-tree nodes, the result will be 1 for a leaf node and 0 otherwise. The number of leaf nodes can be calculated by performing a data parallel reduction on this array. In order to store the indices of leaf nodes into an array of our data structure, we use another temporary local array and fill it with identity values \( (0, 1, 2 ... n-1) \), where \(n\) equals to the total count of kd-tree nodes, then we use the makrs of leaf nodes as a filter to select the leaf nodes by performing an array multiplication for each elements on these two arrays, lastly we need a data parallel algorithm, compact, to remove all the invalid value(0s) from the result of previous step and store the result. 
+
+Our goal is that connect photons with kd-tree leaf nodes so that we can easily find the photons according to the indices of leaf nodes. So we need to classify the photons into an array with the same order of the indices of leaf nodes. For example, the \(a\)th leaf node associates with a range of photons [i ... i + n]. Firstly, we launch a kernel program on all leaf nodes performing the intersection detections between the bounding box and point on all of photons, if the photon is contained in a certain leaf node, then we store the indices of photons. 
+
+The data structure used to store photons for kd-tree leaf nodes works in the similar way to the circular buffer. Implementation of circular buffer on GPU requests a fixed-size contiguous buffer which is efficient for memory management.  
+
+
+\subsubsection{Render} 
 
 
 
