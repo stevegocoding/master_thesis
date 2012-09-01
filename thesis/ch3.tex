@@ -97,7 +97,7 @@ The connection between KD-Tree leaf nodes and photons data is stored as a struct
 
 \subsection{Algorithm Description} 
 
-\subsubsection{Construction} 
+\subsubsection{Construction}  
 
 \begin{algorithm}[H]
 	\SetAlgoLined
@@ -139,17 +139,96 @@ The connection between KD-Tree leaf nodes and photons data is stored as a struct
 
  \vspace{20pt}
 
-In algorithm \ref{algo:build_kdleaf_photons}, it takes two major pieces of input data, the kd-tree data constructed for the scene and the photons data shot in the scene. The photons data is updated every frame by inserting new photons to an big chunk of buffer resides in GPU memory. Similar to the organization of underlying triangle data for kd-tree nodes, the memory for each frame of photons is aligned to a fixed size to enable coalesced memory access which may improve the performance considerably. This is one of the most important good practices for CUDA programming, because if the threads in a block are aceessing consecutive memory locations, then all the accesses are combined into a single request by the hardware. However organizing data in this way will bring extra complexity for implementation because we have to keep track of the locations of beginning of next valid chunk of data for data accessing and there will be holes contained in the whole data array. 
+In algorithm \ref{algo:build_kdleaf_photons}, it takes two major pieces of input data, the kd-tree data constructed for the scene and the photons data shot in the scene. The photons data is updated every frame by inserting new photons to an big chunk of buffer resides in GPU memory. Similar to the organization of underlying triangle data for kd-tree nodes, the memory for each frame of photons is aligned to a fixed size to enable coalesced memory access which may improve the performance considerably. This is one of the most important good practices for CUDA programming, because if the threads in a block are aceessing consecutive memory locations, then all the accesses are combined into a single request by the hardware. However organizing data in this way will bring extra complexity for implementation because we have to keep track of the locations of beginning of next valid chunk of data for data accessing and there will be holes contained in the whole data array. Therefore move the pointer from \(i\)th frame to \(i+1\) frame requires increasing the pointer by maximum size of memory of \(i\)th frame which is aligned to a fixed size. 
 
 We firstly mark the leaf nodes from the input kd-tree data, given the data definition described in the section \ref{subsec:data_org}, we only need to look at alll the nodes and test if the MSB of the node's index is set. The indices of nodes can be retrieved from the kd-tree data. We store the result of marks in an array with the same number of elements as number of kd-tree nodes, the result will be 1 for a leaf node and 0 otherwise. The number of leaf nodes can be calculated by performing a data parallel reduction on this array. In order to store the indices of leaf nodes into an array of our data structure, we use another temporary local array and fill it with identity values \( (0, 1, 2 ... n-1) \), where \(n\) equals to the total count of kd-tree nodes, then we use the makrs of leaf nodes as a filter to select the leaf nodes by performing an array multiplication for each elements on these two arrays, lastly we need a data parallel algorithm, compact, to remove all the invalid value(0s) from the result of previous step and store the result. 
 
 Our goal is that connect photons with kd-tree leaf nodes so that we can easily find the photons according to the indices of leaf nodes. So we need to classify the photons into an array with the same order of the indices of leaf nodes. For example, the \(a\)th leaf node associates with a range of photons [i ... i + n]. Firstly, we launch a kernel program on all leaf nodes performing the intersection detections between the bounding box and point on all of photons, if the photon is contained in a certain leaf node, then we store the indices of photons. 
 
-The data structure used to store photons for kd-tree leaf nodes works in the similar way to the circular buffer. Implementation of circular buffer on GPU requests a fixed-size contiguous buffer which is efficient for memory management.  
+The data structure used to store photons for kd-tree leaf nodes works in the similar way to the circular buffer. We store number of frames of photons in a contiguous buffer. The start and end pointer(indices) indicate a range of frames of photons that is valid for rendering this frame. The start pointer points to the first photons of first active frame and the end pointer points to the first photon of the last active frame. We have a frame counter indicating the number of frames we have in the range, therefore we can detect if the buffer is full by compare the frame counter and max frames capacity. 
 
 
 \subsubsection{Render} 
 
+\begin{algorithm}[H]
+	\SetAlgoLined
+	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+	\Input{Query Point} 
+	\Input{Camera Rays}
+	\Input{Query Radius} 
+	\Input{Diffuse Colors}
+	\Output{Radiance} 
+	
+	\For{All intersection points in parallel} {
+		Retrive diffuse color at intersection point; \\
+		Retrive the normal vector at intersection point; \\
+		Flip the normal vector if it is needed; \\ 
+		\( irradiance \leftarrow rangeSearch(intersectPoint) \); \\
+		\( radiance \leftarrow colorDiffuse \cdot Pi^{-1} \cdot irradiance \); 	
+	}
+	\caption{Radiance estimation with kd-tree and photons queue.} 	
+	\label{algo:render_kdleaf_photons} 
+\end{algorithm}
 
+\begin{algorithm}
+	\SetAlgoLined
+	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output} 
+	\Input{Query point position} 
+	\Input{Query radius} 
+	\Input{KD-Tree Data} 
+	\Input{Leaf nodes photons queue}
+	\Output{Irradianc}
+	
+	totalFlux \(\leftarrow\) 0; \\
+	todoStack \(\leftarrow\) new\ Array[KD\_MAX\_HEIGHT]; \\
+	nodeAddr \(\leftarrow\) 0; \\
+
+	\While{\(nodeAddr >= 0\)} {
+
+		idxNode \(\leftarrow\) kdTreeData.preorderTree[nodeAddr]; \\ 
+		isLeaf \(\leftarrow\) idxNode\ \&\ 0x80000000; \\ 
+		idxNode \(\leftarrow\) idxNode\ \&\ 0x7fffffff; \\ 
+		
+		\While{\(NOT\ isLeaf\)} {
+			leftNodeAddr \(\leftarrow\) nodeAddr+1+2; \\
+		
+			parentInfo \(\leftarrow\) GetParentInfo(kdTreeData); \\
+			splitAxis \(\leftarrow\) GetSplitAxis(parentInfo); \\ 
+			splitPos \(\leftarrow\) GetSplitPos(parentInfo); \\
+			rightNodeAddr \(\leftarrow\) GetRightNodeAddr(parentInfo); \\
+		
+			distSqr \(\leftarrow\) Sqr(queryPoint[splitAxis] \(-\) splitPos); \\ 
+			
+			nodeAddr \(\leftarrow\) leftNodeAddr; \\
+			otherNodeAddr \(\leftarrow\) rightNodeAddr; \\
+			\If{queryPoint[splitAxis] \(>\) splitPos} {
+				nodeAddr \(\leftarrow\) rightNodeAddr; \\
+				otherNodeAddr \(\leftarrow\) leftNodeAddr; \\
+			}
+			\If{ distSqr \(<\) queryDistSqr } { 
+				todoStack[todoPos++] \(\leftarrow\) otherNodeAddr; \\ 
+			} 
+			
+			Read node index + leaf info (MSB) for new node. \\
+		}
+		
+		/* Now we have a leaf node */ \\
+		photonIdx \(\leftarrow\) photonsQueue.start; \\
+		numPhotons \(\leftarrow\) photonsQueue.numPhotons; \\
+		\While {has more photons} {
+			photonPos \(\leftarrow\) GetPhotonPos(photonIdx); \\
+			pointDistSqr \(\leftarrow\) ComputeDistantSqr(queryPoint, photonPos); \\
+			\If {pointDistSqr \(<\) queryDistSqr} {
+				totoalFlux \(\leftarrow\) Add the flux of photons; \\
+			} 
+		} 
+		Pop next node from next stack; \\	
+	}	
+	
+	\Return irradiance \(\leftarrow\) totalFlux \/ maxRadiusSqr * Pi; \\ 
+	
+	\caption{KNN range search with kd-tree and photons queue.} 	
+	\label{algo:knn_kdleaf_photons} 
+\end{algorithm}
 
 
