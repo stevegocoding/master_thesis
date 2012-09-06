@@ -20,7 +20,7 @@ The update process of photons queue is straightforward. It depends on the photon
 
 \begin{figure}[htp] 
     \centering 
-    \fbox{\includegraphics{kd_leaf_photons.pdf}}
+    \fbox{\includegraphics{imgs/kd_leaf_photons.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[]{Radiant flux from a point light source is passing through the spheres around the light.}
     \label{fig:kd_leaf_photons} 
@@ -30,7 +30,7 @@ As shown in figure \ref{fig:kd_leaf_photons}, in addition to the triangle data, 
 
 \begin{figure}[htp] 
     \centering 
-    \fbox{\includegraphics[width=\linewidth]{kd_leaf_photons_2.pdf}}
+    \fbox{\includegraphics[width=\linewidth]{imgs/kd_leaf_photons_2.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[]{Radiant flux from a point light source is passing through the spheres around the light.}
     \label{fig:kd_leaf_photons_2} 
@@ -70,7 +70,7 @@ The traversal data is compressed into an unsigned integer array, as shown in the
 
 \begin{figure}[htp] 
     \centering 
-    \fbox{\includegraphics[width=\linewidth]{kdtree_data_memory_layout.pdf}}
+    \fbox{\includegraphics[width=\linewidth]{imgs/kdtree_data_memory_layout.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[]{Compacted kd-tree data memory layout.}
     \label{fig:kdtree_data_memory_layout} 
@@ -82,7 +82,7 @@ Where the root\_idx, left\_idx and right\_idx are the indices of the root, left 
 
 \begin{figure}[htp] 
     \centering 
-    \fbox{\includegraphics{kdtree_data_memory_layout_2.pdf}}
+    \fbox{\includegraphics{imgs/kdtree_data_memory_layout_2.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[]{Compacted kd-tree data memory layout.}
     \label{fig:kdtree_data_memory_layout} 
@@ -150,7 +150,7 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 
 \subsubsection{Render} 
 
-\begin{algorithm}[H]
+\begin{algorithm} 
 	\SetAlgoLined
 	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
 	\Input{Query Point} 
@@ -170,6 +170,8 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 	\label{algo:render_kdleaf_photons} 
 \end{algorithm}
 
+Algorithm \ref{algo:render_kdleaf_photons} shows the main framework of estimating the radiance at a query point in parallel. Each CUDA thread works on one query point. The key part of this computation is performing KNN range search around the query point with the kd-tree and the photons queue as input. The KNN range search function sums up all the power(flux) of photons and output the irradiance by dividing the flux by the area of circle centered at the query with a predefined radiance. 
+
 \begin{algorithm}
 	\SetAlgoLined
 	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output} 
@@ -177,6 +179,7 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 	\Input{Query radius} 
 	\Input{KD-Tree Data} 
 	\Input{Leaf nodes photons queue}
+	\Output{Number of photons found}
 	\Output{Irradianc}
 	
 	totalFlux \(\leftarrow\) 0; \\
@@ -231,4 +234,5 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 	\label{algo:knn_kdleaf_photons} 
 \end{algorithm}
 
+In algorithm \ref{algo:knn_kdleaf_photons}, we present the KNN range search using our data structure. 
 

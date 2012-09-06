@@ -14,4 +14,6 @@ notes/tmp
 *.svg
 *.bbl
 *.blg
+*.doc
+*.asv
 main.pdf
