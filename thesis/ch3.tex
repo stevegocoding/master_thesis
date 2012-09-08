@@ -6,7 +6,7 @@ In the first 2 sections of this chapter, We will have an overview on our approac
 
 \section{Overview} 
 
-As described in chapter 2, we build a gloabl kd-tree as the photon map for irradiance estimation. However, the global photon map is rebuilt from scratch every frame, this process is time consumings due to the complexity of kd-tree building algorigthm on GPUs and can be avoided. 
+As described in chapter 2, we build a gloabl kd-tree as the photon map for irradiance estimation. However, the global photon map is rebuilt from scratch every frame, this process is time consuming due to the complexity of kd-tree building algorigthm on GPUs and can be avoided. 
 
 Instead of building a global kd-tree for photons, we re-use the same kd-tree for the geometry objects(triangles) which is static and associate the geometry and the photons data for efficient KNN search and update for dynamic scene. 
 

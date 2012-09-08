@@ -86,9 +86,33 @@ legend('Photon Map','KD-Tree Photon Queue')
 xlabel('Total number of photons'); 
 ylabel('Time in seconds'); 
 
-title('Phoons search performance with different number of photons')
+title('Phoons search performance (r = 1.0)')
 
 hold on 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Photon search with different query radius
+
+figure(5)
+
+% X-Axis: query radius
+x=[0.5, 0.75, 1.0, 1.25, 1.5];
+
+% Y-Axis: time(sec) 
+y1 = [13.560, 23.107, 29.522, 35.374, 39.786];
+
+y2 = [12.983, 21.653, 27.861, 31.989, 34.833]; 
+
+plot(x, y1, '-*r');hold;plot(x, y2, '-*g'); 
+
+legend('Photon Map','KD-Tree Photon Queue')
+xlabel('Query radius'); 
+ylabel('Time in seconds'); 
+
+title('Photons search performance (50000 photons)')
+
+hold on 
+
 
 
 
