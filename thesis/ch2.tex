@@ -1,7 +1,7 @@
-\chapter{Background}
+\chapter{Background and Related Work}
 
+In this chapter, we will start with the introductions of most important theoretical concepts and frameworks to establish a foundation for the subsequent discussion of global illumination approaches. Then we will make a short survey on various approaches and their strenghts and weakness when dealing with different phenomena. Afterwards we will hightlight GPU-based techniques applied on Monte Carlo ray tracing and photon mapping and discuss some open issues of the current approach for the introduction of our new approach in the following chapter. 
 
-To establish the mathematics basis and mental model of the problem, some essential conceptions in Computer Graphics are going to be introduced in this chapter.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -10,12 +10,15 @@ Radiometry is the basic terminology to describe light which is crucial to simula
 
 \subsection{Important Quantities} 
 
-\begin{table}[!ht]
+\begin{table}[ht]
 \begin{center}
+	
+	\renewcommand{\arraystretch}{1.2}
 	\begin{tabular}{ | l | l | l |}     	
 	\hline 
 
 	Symbol & Quantity & Unit \\
+	\cline{1-3}
 
 	% \(Q_{\lambda}\) 	& 		Spectral radiant energy 		& 		\(J nm^{-1} \) \\
 	\(Q\) 			& 		Radiant Energy 				& 		\(j\) \\ 
@@ -28,7 +31,7 @@ Radiometry is the basic terminology to describe light which is crucial to simula
 
 	\end{tabular}
 \end{center} 
-\caption{System Specifications}
+\caption{Important Radiometry Quantities}
 \label{tab:radiometry_quantities}
 \end{table}
 
@@ -83,8 +86,15 @@ The solid angle used in equation \ref{eq:flux_from_radiance} can be thought as r
     \label{fig:radiance_solid_angle} 
 \end{figure} 
 
-\subsection{Light Source}
-The light in the form of photons is emitted from light sources. We can measure the intensity of light source in \emph{wattage}. Take a point light source for example, the power this light can emit is denoted by \(\Phi\), the emitted light distribute uniformly in all directions, the irradiance, \(E\), can be computed at a surface as: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Fundamentals of Global Illumination}
+With the basic knowledge of radiometry, we will introduced a theoretical framework as the basis of global illumination. There are several components are included in this framework, light source, reflectance and visibilty. We will look at these components firstly and then get to the rendering equation describing the interaction between light and an surface with no participating media. 
+
+\subsection{Light Source} 
+As the light in the form of photons is emitted from light sources initially, the lighting becomes an essential input of the model. There are several types of light sources widely used in Computer Graphics such as point, directional and area lights. The radiance of lighting emitted from light sources is denoted as \( L_{e} \). 
+
+We can measure the intensity of light source in \emph{wattage}. Take a point light source for example, the power this light can emit is denoted by \(\Phi\), the emitted light distribute uniformly in all directions, the irradiance, \(E\), can be computed at a surface as: 
 
 \begin{equation}
 E(x) = \frac{\Phi \cos{\theta}}{4\pi r^{2}} 
@@ -92,11 +102,7 @@ E(x) = \frac{\Phi \cos{\theta}}{4\pi r^{2}}
 
 Where \(r\) is the distance from \(x\) to the light source and \(\theta\) is the angle between the surface normal and the direction to the light source. From the equation we can intuitively tell a surface facing the source will receive more photons per area than a surface that is oriented differently.   
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Render Equation}
-With the physically-based model of lighting, a theoretical framework describing the interaction between light and an surface will be introduced in this section. 
-
+\subsection{Reflectance} 
 \begin{figure}[htp] 
     \centering 
     \fbox{\includegraphics{imgs/brdf.pdf}}
@@ -111,7 +117,7 @@ The BRDF, \(f_{r}\), defines the relationship between differential reflected rad
 
 \begin{equation}
 f_{r} = \frac{dL_{o}(p, \omega_{o})}{dE(p, \omega_{i})} = \frac{dL_{o}(p, \omega_{o})}{L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega{i}}
-\label{eq:brdf}
+\label{eq:brdf} 
 \end{equation} 
 
 There are two important properties of BRDF used in rendering. The first one is the Helmholtz's law of reciprocity, that is given any pair of directions \( (\omega_{i}, \omega_{o} ) \), we have: 
@@ -126,7 +132,9 @@ Another important physical property of BRDF is energy conservation, stating that
  \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i} \leq 1 , \forall \omega_{i}
 \end{equation}
 
-Given the definition of BRDF, we can introduce the basic render equation, also known as \emph{local illumination model} by integrating the equation \ref{eq:brdf} over the sphere of incident directions around location \(p\), the left side of the equation will be the outgoding radiance in direction \(\omega_{o}\).
+Note that there are special cases exists in the BRDF model, one is the \emph{Lambertian} BRDF in which the outgoding direction  is independent from the incident direction. Another extreme case is the perfect mirror reflection BRDF which is a Dirac delta function making the incident direction \(\omega_{i}\) mirrored at the surface normal at the \(p\) on the surfacee. BRDFs including thesee two special case is often broadly classified as directional diffuse, glossy and specular. 
+
+Given the definition of BRDF, we can introduce the basic render equation, also known as \emph{local illumination model} by integrating the equation \ref{eq:brdf} over the sphere of incident directions around location \(p\), the left side of the equation will be the outgoding radiance in direction \(\omega_{o}\). 
 
 \begin{equation}
 L_{o}(p, \omega_{o}) = \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i}
@@ -135,16 +143,31 @@ L_{o}(p, \omega_{o}) = \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \om
 
 Where \(\Omega\) is the hemisphere of incoming directions at \(p\).
 
-\paragraph{Light Transport Equationa} 
+\subsection{Visibility} 
+Another important component is the visibility computation. It is often modeled as a binary function denoted by \(V(x, x')\). 
+We have following equation: 
 
-The local illumiation model is used to describe the direct lighting effect which is too simple for simulating real-world lighting effect, indirect lighting has to be introduced to this model as well. Therefore we introduce the Light Transport Equation (LTE) in this section to form the mathematical basis for all global illumination algorithms, The LTE states the necessary conditions for equilibrium of light transport in the scene without participating media and it is often used in global illumination algorithms such as Monte-Carlo ray-tracing (section \ref{sec:mc_rt} and Photon-Mapping. 
+  \begin{equation}
+    V(x, x')=\left\{
+    \begin{array}{ll}
+      1  & \text{x and x' are mutually visible} \\
+      0  & \text{otherwise}
+    \end{array}
+    \right.
+  \end{equation}
+
+Ray casting is the mose widely used operator to determine the closest surface in a direction by shooting a ray into the scene trying to find the closest intersection point with the surface. We will discuss ray casting and ray tracing technique further in section \ref{subsec:classic_rt}.
+
+Another more complicated model of visibility is non-binary function occures between surface point a area light source, this model is used to simulate the soft shadows.  \cite{Hasenfratz2003} is a full survey of existing shadow methods dedicated to real-time rendering of soft shadows. 
+
+\subsection{Light Transport Equation} 
+
+The local rendering equation used to describe the direct lighting effect is too simple for simulating real-world lighting effect, indirect lighting has to be introduced to this model as well. Therefore we introduce the Light Transport Equation (LTE) in this section to form the mathematical basis for all global illumination algorithms. The LTE is also known as Rendering Equation(RE) which is introduced in the first time in \cite{Kajiya:1986:RE:15922.15902}. We use LTE term here to be distinguished from the local rendering equation, also it is more suitable with context of global illumination. The LTE states that the outgoing radiance \(L_{o}\) at location \(p\) on the surface in the direction \(\omega_{o}\) is the sum of emitted radiance \(L_{e}\) and reflected radiance \(L_{r}\). The reflected radiance can be computed using the local rendering equation \ref{eq:local_render_equation} so we have final LTE shown in equation \ref{eq:lte}. 
 
 \begin{equation}
 L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i}
 \label{eq:lte}
-\end{equation}
-
-\( L_{o}(p, \omega_{o}) \), the outgoing radiance at any surface location in a model, is the sum of the emitted radiance, \( L_{e}(p, \omega_{o}) \) and the reflected radiance. 
+\end{equation}  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -152,6 +175,7 @@ L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, 
 \label{sec:mc_rt}
 
 \subsection{Classic Ray Tracing}
+\label{subsec:classic_rt} 
 
 Ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}. It is an elegent and simple algorithm for easily rendering shadows and specular surfaces. 
 

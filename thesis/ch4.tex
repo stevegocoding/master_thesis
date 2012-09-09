@@ -100,7 +100,6 @@ Although our new technique demands much more memory than the brute force does in
     \label{fig:memory_consumption_2}  
 \end{figure}   
 
-
 As shown in figure \ref{fig:memory_consumption_2}, building a kd-tree for the photons demands much more memory than building the photons queue, even though the memory allocated here will release later, the peak memory consumption could bottleneck the performace of the whole program or even prevent the program from running for some video cards with smaller memory capacity. Since memory allocation is an expensive routine and kd-tree construction requires lots of temporary memory allocation/release, it becomes another important factor that brings negative impact on performance of the data structure construction for the brute force as we can see in the section \ref{sec:build_time}.  
 
 \section{Photons Search}
@@ -212,7 +211,7 @@ Several key parameters defined in our experiments for both the standard photon m
 In figure \ref{fig:pm_global}, we firstly present the result image rendered with default values of the parameters listed in table \ref{tab:expr_params} using standard photon mapping algorithm and phtons visualization image. 
 
 \begin{figure}[htp] 
-    \centering 
+\begin{center}
     \fbox{
 	\subfigure[Test subfigure 1]{\includegraphics[scale=0.5]{imgs/place_holder.pdf}}
 	\subfigure[Test subfigure 2]{\includegraphics[scale=0.5]{imgs/place_holder_2.pdf}}
@@ -220,6 +219,7 @@ In figure \ref{fig:pm_global}, we firstly present the result image rendered with
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[]{Memory consumption in rendering phase.}
     \label{fig:pm_global} 
+\end{center} 
 \end{figure}   
 
 The following series of images groups rendered with our new approach is a frame sequence rendering a scene with moving point light source. The figure \ref{fig:pq_frame_1} frame is rendered with the point light located in the defualt position.  
