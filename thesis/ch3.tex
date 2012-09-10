@@ -49,7 +49,7 @@ is reached, we move forward the start pointer to avoid there are too many photon
 
 \subsection{Rendering} 
 
-Rendering with our data structure does not differ from the standard photon mapping rendering algorithm. In rendering phase, we cast the rays from the camera into the scene in parallel and perform KNN search using the kd-tree already built for the geometry, when we reach the leaf nodes we use our data structure to find the photons data for particular leaf node and gather the photons for radiance estimation. 
+Rendering with our data structure does not differ much from the standard photon mapping rendering algorithm. In rendering phase, we cast the rays from the camera into the scene in parallel and perform KNN search using the kd-tree already built for the geometry, when we reach the leaf nodes we use our data structure to find the photons data for particular leaf node and gather the photons for radiance estimation. 
 
 \section{Implementation Details} 
 \label{sec:impl_detials} 
@@ -225,7 +225,7 @@ Algorithm \ref{algo:render_kdleaf_photons} shows the main framework of estimatin
 				totoalFlux \(\leftarrow\) Add the flux of photons; \\
 			} 
 		} 
-		Pop next node from next stack; \\	
+		\(nodeAddr\) \(\leftarrow\) Pop next node from next stack; \\	
 	}	
 	
 	\Return irradiance \(\leftarrow\) totalFlux \/ maxRadiusSqr * Pi; \\ 
@@ -234,5 +234,5 @@ Algorithm \ref{algo:render_kdleaf_photons} shows the main framework of estimatin
 	\label{algo:knn_kdleaf_photons} 
 \end{algorithm}
 
-In algorithm \ref{algo:knn_kdleaf_photons}, we present the KNN range search using our data structure. 
+In algorithm \ref{algo:knn_kdleaf_photons}, we present the KNN range search using our data structure. The basic layout of the algorithm follows the standard while-while iterative traversal scheme.  We first allocate an array as the stack for the kd-tree traversal. Note that this array resides on the local memory of the CUDA thread running this algorithm, therefor the access to local array is always coalesced. Then we visit the kd-tree nodes in pre-order style using the compressed kd-tree data. If the current node is an internal, then we determine which subtree we will go deeper by compare the position of query point and split plane with respect to the split axis. If the other child node is in the range of search radius, it is going to be pushed to the stack. When a leaf node is reached, we look up the photons queue in which the range of photons for searching is marked by the start and end pointer and iterate over the photons finding the ones in the searching radius and calculate the irradiance. 
 

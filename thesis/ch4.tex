@@ -224,28 +224,75 @@ In figure \ref{fig:pm_global}, we firstly present the result image rendered with
 
 The following series of images groups rendered with our new approach is a frame sequence rendering a scene with moving point light source. The figure \ref{fig:pq_frame_1} frame is rendered with the point light located in the defualt position.  
 
-\begin{figure}\label{fig:result_images}
+\begin{figure}
+\label{fig:result_images1}
 \begin{center}
 \setlength{\tabcolsep}{0mm}
 \subfigure[]{%	Result Image
 \begin{tabular}{c}
-\includegraphics*[width=0.5\textwidth]{imgs/place_holder.pdf}\\
-\includegraphics*[width=0.5\textwidth]{imgs/place_holder.pdf}\\
-\includegraphics*[width=0.5\textwidth]{imgs/place_holder.pdf}
+\includegraphics*[scale=0.25]{imgs/pq_frame0.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame1.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame2.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame3.pdf}
 \end{tabular}
 }%
 \subfigure[]{%	Photons Visualization
 \begin{tabular}{c}
-\includegraphics*[width=0.5\textwidth]{imgs/place_holder.pdf}\\
-\includegraphics*[width=0.5\textwidth]{imgs/place_holder.pdf}\\
-\includegraphics*[width=0.5\textwidth]{imgs/place_holder.pdf}
+\includegraphics*[scale=0.25]{imgs/pqv_frame0.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame1.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame2.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame3.pdf}
 \end{tabular}
 }%
-
 \caption{a caption}
 \end{center}
+
 \end{figure}
 
-As shown in figure \ref{fig:result_images}, the quality of 	result images become better and finally stablized after a certain number of frames. It is not difficult to understand why we have such result according to our algorithm, as we trace fewer photons for each frame, the beginning few images apparently are less illuminated by the light source, in the following frames, we keep shooting and more photons into the scene and accumulating the photons to the photons queue. Therefore we can visualize more and more photons and the scene becomes brighter. The number of photons in the scene will become stable when the maximum frames, since there are same amount of photons traced as they are supposed to be compares to the standard approach. Eventually we will achieve same image quality as of the standard photon mapping. 
+\begin{figure}
+\begin{center}
+\setlength{\tabcolsep}{0mm}
+\subfigure[]{%	Result Image
+\begin{tabular}{c}
+\includegraphics*[scale=0.25]{imgs/pq_frame4.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame5.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame6.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame7.pdf}
+\end{tabular}
+}%
+\subfigure[]{%	Photons Visualization
+\begin{tabular}{c}
+\includegraphics*[scale=0.25]{imgs/pqv_frame4.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame5.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame6.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame7.pdf}
+\end{tabular}
+}%
+\caption{a caption}
+\end{center}
+\label{fig:result_images2}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\setlength{\tabcolsep}{0mm}
+\subfigure[]{%	Result Image
+\begin{tabular}{c}
+\includegraphics*[scale=0.25]{imgs/pq_frame8.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pq_frame9.pdf}
+\end{tabular}
+}%
+\subfigure[]{%	Photons Visualization
+\begin{tabular}{c}
+\includegraphics*[scale=0.25]{imgs/pqv_frame8.pdf}\\
+\includegraphics*[scale=0.25]{imgs/pqv_frame9.pdf}
+\end{tabular}
+}%
+\caption{a caption}
+\end{center}
+\label{fig:result_images3}
+\end{figure}
+
+As shown in figure \ref{fig:brdf}, figure \ref{fig:result_images2} and figure \ref{fig:result_images3}, the quality of 	result images become better and finally stablized after a certain number of frames. It is not difficult to understand why we have such result according to our algorithm, as we trace fewer photons for each frame, the beginning few images apparently are less illuminated by the light source, in the following frames, we keep shooting and more photons into the scene and accumulating the photons to the photons queue. Therefore we can visualize more and more photons and the scene becomes brighter. The number of photons in the scene will become stable when the maximum frames, since there are same amount of photons traced as they are supposed to be compares to the standard approach. Eventually we will achieve same image quality as of the standard photon mapping. 
 
 
