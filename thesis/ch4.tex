@@ -65,7 +65,7 @@ We use the CUDA Toolkit 4.2 and Microsoft Visual Studio 2012 as the base CUDA de
 \section{Data Structure Construction}
 \label{sec:build_time}
 
-Firstly, we will look at the performance of the data structure construction. Given a total number of photons shot in the scene, we compare the constructiona time among a range of frames. As shown in figure \ref{fig:construction_time}, the construction time of the brute force(red curve)  the red curve indicates the construction time with the brute force method, that is we rebuild the kd-tree for photon map every frame from scratch with all the photons shot from the light source in the scene. The green curve represents the construction time using our increamental update approach. For each frame, we trace less photons(500 photons instead of 5000 in this test case) and keep accumulating the photons for rendering the following frames. Also the complicated kd-tree construction process is avoided. Therefore we can see the data structure construction time is shorter than the brute force method. 
+Firstly, we will look at the performance of the data structure construction. Given a total number of photons shot in the scene, we compare the construction time among a range of frames. As shown in figure \ref{fig:construction_time}, the construction time of the brute force(red curve)  the red curve indicates the construction time with the brute force method, that is we rebuild the kd-tree for photon map every frame from scratch with all the photons shot from the light source in the scene. The green curve represents the construction time using our incremental update approach. For each frame, we trace less photons(500 photons instead of 5000 in this test case) and keep accumulating the photons for rendering the following frames. Also the complicated kd-tree construction process is avoided. Therefore we can see the data structure construction time is shorter than the brute force method. 
 
 
 \begin{figure}[ftp] 
@@ -78,9 +78,9 @@ Firstly, we will look at the performance of the data structure construction. Giv
 
 \section{Memory Consumption} 
 
-The memory consumption is another important aspect we need to investigat. The memory capacity of the PC's video cards nowadays has been greatly extended, it is fairly easy to find an affordable video cards featured with 1024MB DDR5 on-board memory. However video memory is stil a type of valuable resource. When analysing the memory consumption of our technique compares to the brute force approach, we are looking at the data from two different running phases of our test program, the pre-rendering phase and rendering phase. 
+The memory consumption is another important aspect we need to investigate. The memory capacity of the PC's video cards nowadays has been greatly extended, it is fairly easy to find an affordable video cards featured with 1024MB DDR5 on-board memory. However video memory is still a type of valuable resource. When analyzing the memory consumption of our technique compares to the brute force approach, we are looking at the data from two different running phases of our test program, the pre-rendering phase and rendering phase. 
 
-As shown in figure \ref{fig:memory_consumption}, given the parameter of \emph{max frames} as \emph{10}, the memory consumption of our technique is considerably larger than the brute force, in fact, it requires more than 10 times more memory. The reason for this behavior is that we maintain a large buffer that works like circular buffer to keep track of all the photons data of previous frames, and the capacity of the buffer is determined by maximum number of frames we check back. In addition to the extra photon data, we also need to store another buffer on GPU memory that stores the photons that belongs to a kd-tree leaf node using photon indices which point to the photon data, buffer. Though the index is just represented with an 32-bit unsigned integer value which is much smalle than the detailed representation of a photon in the global buffer. 
+As shown in figure \ref{fig:memory_consumption}, given the parameter of \emph{max frames} as \emph{10}, the memory consumption of our technique is considerably larger than the brute force, in fact, it requires more than 10 times more memory. The reason for this behavior is that we maintain a large buffer that works like circular buffer to keep track of all the photons data of previous frames, and the capacity of the buffer is determined by maximum number of frames we check back. In addition to the extra photon data, we also need to store another buffer on GPU memory that stores the photons that belongs to a kd-tree leaf node using photon indices which point to the photon data, buffer. Though the index is just represented with an 32-bit unsigned integer value which is much smaller than the detailed representation of a photon in the global buffer. 
 
 \begin{figure}[ftp] 
     \centering 
@@ -100,7 +100,7 @@ Although our new technique demands much more memory than the brute force does in
     \label{fig:memory_consumption_2}  
 \end{figure}   
 
-As shown in figure \ref{fig:memory_consumption_2}, building a kd-tree for the photons demands much more memory than building the photons queue, even though the memory allocated here will release later, the peak memory consumption could bottleneck the performace of the whole program or even prevent the program from running for some video cards with smaller memory capacity. Since memory allocation is an expensive routine and kd-tree construction requires lots of temporary memory allocation/release, it becomes another important factor that brings negative impact on performance of the data structure construction for the brute force as we can see in the section \ref{sec:build_time}.  
+As shown in figure \ref{fig:memory_consumption_2}, building a kd-tree for the photons demands much more memory than building the photons queue, even though the memory allocated here will release later, the peak memory consumption could bottleneck the performance of the whole program or even prevent the program from running for some video cards with smaller memory capacity. Since memory allocation is an expensive routine and kd-tree construction requires lots of temporary memory allocation/release, it becomes another important factor that brings negative impact on performance of the data structure construction for the brute force as we can see in the section \ref{sec:build_time}.  
 
 \section{Photons Search}
 
@@ -114,11 +114,11 @@ In this section, we will show how the different techniques perform during the ph
 
 \end{itemize} 
 
-We will present how these parametes effect the photon search result and analyse the possible cause. 
+We will present how these parameters effect the photon search result and analyze the possible cause. 
 
 \subsection{Number of Photons} 
 
-As shown in the figure \ref{fig:photon_search_1}, the photon gathering of our technique is slightly faster than the standard photon mapping when number of photons is less than 150000, as the range of photons to search grows, it slows down and is out performed. As introduced earlier, our technique creates a buffer holding the photons that spatially belong to the leaf nodes of kd-tree for the scene objects, when performing the photon search, we traverse this built kd-tree with k-nearest neighbor algorithm to quickly reach the leaf nodes that is connecting with the photons that potentially fall into a pre-defined search range from the query point using the bouding box information of the kd-tree leaf nodes, then perform a linear search at this level. Compares to kd-tree built for the hundreds of thousands of photons in the scene, the kd-tree for geometry is usually far more coarse, especially for a relative simple scene. Therefore the kd-tree for a simple scene will have a small depth and a leaf node could have an large extent and holds a large number of photons. Thus the advantages of the binary search is out-weighted by the linear search. This is a possible reason why we have a result shown in figure \ref{fig:photon_search_1}. In an extreme case, when there is no split in the scene, thus the kd-tree only have one node, the root node which contains everything, the photon search will be degenerated into a linear search. 
+As shown in the figure \ref{fig:photon_search_1}, the photon gathering of our technique is slightly faster than the standard photon mapping when number of photons is less than 150000, as the range of photons to search grows, it slows down and is out performed. As introduced earlier, our technique creates a buffer holding the photons that spatially belong to the leaf nodes of kd-tree for the scene objects, when performing the photon search, we traverse this built kd-tree with k-nearest neighbor algorithm to quickly reach the leaf nodes that is connecting with the photons that potentially fall into a pre-defined search range from the query point using the bounding box information of the kd-tree leaf nodes, then perform a linear search at this level. Compares to kd-tree built for the hundreds of thousands of photons in the scene, the kd-tree for geometry is usually far more coarse, especially for a relative simple scene. Therefore the kd-tree for a simple scene will have a small depth and a leaf node could have an large extent and holds a large number of photons. Thus the advantages of the binary search is out-weighted by the linear search. This is a possible reason why we have a result shown in figure \ref{fig:photon_search_1}. In an extreme case, when there is no split in the scene, thus the kd-tree only have one node, the root node which contains everything, the photon search will be degenerated into a linear search. 
 
 \begin{figure}[ftp] 
     \centering 
@@ -140,13 +140,9 @@ Figure \ref{fig:photon_search_2} shows that how the query radius effect the phot
     \label{fig:photon_search_2}  
 \end{figure} 
 
-
-\section{Overall Performance} 
-
-
 \section{Image Quality}
 
-In this section we take a look at the quality of our approach. As described in chapter 3, our new approach uses an increamental scheme to update the kd-tree and photons queue for the rendering to be beneficial for the dynamic scene with moving light source. Therefore it makes more sense to look at the result images of a range of frames to see the image quality, the light source will also be moving in the frame sequence so that we can see the change of equilibrium distribution of radiance in the scene. To obtain a better knowledge on how the photons are distributed in the scene each frame, we will present the photons visualization result images as well along with the result image. 
+In this section we take a look at the quality of our approach. As described in chapter 3, our new approach uses an incremental scheme to update the kd-tree and photons queue for the rendering to be beneficial for the dynamic scene with moving light source. Therefore it makes more sense to look at the result images of a range of frames to see the image quality, the light source will also be moving in the frame sequence so that we can see the change of equilibrium distribution of radiance in the scene. To obtain a better knowledge on how the photons are distributed in the scene each frame, we will present the photons visualization result images as well along with the result image. 
 
 Several key parameters defined in our experiments for both the standard photon mapping method and our new approach are presented in the table \ref{tab:expr_params}. 
 
@@ -156,11 +152,11 @@ Several key parameters defined in our experiments for both the standard photon m
 	\renewcommand{\arraystretch}{1.2}
 	\begin{tabular}{p{5cm}p{3cm}p{5cm}}
 	
-	Parameter  				& 		Default Value 		&		Discription \\ 
+	Parameter  				& 		Default Value 		&		Description \\ 
 	
 	\hline 
 
-	Max. Photons Bounses		& 		3					&		The maximum photons reflection will be traced. \\  
+	Max. Photons Bounces		& 		3					&		The maximum photons reflection will be traced. \\  
 
 	\hline 					
 
@@ -222,7 +218,7 @@ In figure \ref{fig:pm_global}, we firstly present the result image rendered with
 \end{center} 
 \end{figure}   
 
-The following series of images groups rendered with our new approach is a frame sequence rendering a scene with moving point light source. The figure \ref{fig:pq_frame_1} frame is rendered with the point light located in the defualt position.  
+The following series of images groups rendered with our new approach is a frame sequence rendering a scene with moving point light source. The figure \ref{fig:pq_frame_1} frame is rendered with the point light located in the default position.  
 
 \begin{figure}
 \label{fig:result_images1}
@@ -293,6 +289,6 @@ The following series of images groups rendered with our new approach is a frame 
 \label{fig:result_images3}
 \end{figure}
 
-As shown in figure \ref{fig:brdf}, figure \ref{fig:result_images2} and figure \ref{fig:result_images3}, the quality of 	result images become better and finally stablized after a certain number of frames. It is not difficult to understand why we have such result according to our algorithm, as we trace fewer photons for each frame, the beginning few images apparently are less illuminated by the light source, in the following frames, we keep shooting and more photons into the scene and accumulating the photons to the photons queue. Therefore we can visualize more and more photons and the scene becomes brighter. The number of photons in the scene will become stable when the maximum frames, since there are same amount of photons traced as they are supposed to be compares to the standard approach. Eventually we will achieve same image quality as of the standard photon mapping. 
+As shown in figure \ref{fig:brdf}, figure \ref{fig:result_images2} and figure \ref{fig:result_images3}, the quality of 	result images become better and finally stable after a certain number of frames. It is not difficult to understand why we have such result according to our algorithm, as we trace fewer photons for each frame, the beginning few images apparently are less illuminated by the light source, in the following frames, we keep shooting and more photons into the scene and accumulating the photons to the photons queue. Therefore we can visualize more and more photons and the scene becomes brighter. The number of photons in the scene will become stable when the maximum frames, since there are same amount of photons traced as they are supposed to be compares to the standard approach. Eventually we will achieve same image quality as of the standard photon mapping. 
 
 

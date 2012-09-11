@@ -205,10 +205,12 @@
   year = {1977},
   volume = {9},
   pages = {23-29},
+  doi = {10.1007/BF00263763},
   issn = {0001-5903},
   issue = {1},
   language = {English},
-  publisher = {Springer-Verlag}
+  publisher = {Springer-Verlag},
+  url = {http://dx.doi.org/10.1007/BF00263763}
 }
 
 @ARTICLE{Luebke2008,
