@@ -1,13 +1,12 @@
 \chapter{Introduction}
 
-\section{Problem Statement}
-
-Recently, with the dramatically boost of computing power of the current generation Graphics Processor Unit (GPUs) device, the application of the massive parallel computing capability offered by GPU has been drawn more and more interest in the field of Computer Graphics, especially realistic image synthesis.  
-
-Realistic image synthesis technique has always been known computing power demanding due to the physically based simulations. In order to produce images with decent quality and handle wider range of types of materials in the scene, solving the Light Transport  Equation (LTE) require more effort such as accelerating of ray-object intersections query, more sampling of the ray path and multi-pass rending technique. However, it is not free to take the advantage of GPUs' processing power, algorithms have to be parallelized to be suitable of hardware and the programmers is required to code carefully to make sure to follow the best practice of programming on GPU. 
-
-An example of the algorithm parallelization is the construction of KD-Tree acceleration structure for both scene objects (triangles) and photons(points). The algorithm is designed in Breadth First style using GPU instead of the Depth First style using CPU. The data structure is also implemented in Structure of Arrays (SoA) on GPU instead of Array of Structures (AoS) to fit the GPU memory access pattern. 
-
-Adapt the program to be be GPU hardware friendly is also challenging. For example, irregular memory access on GPU can be huge performance overhead, smart utilization of the memory hierarchy (such as the using the shared memory over global memory) on GPU is very helpful to hide memory latency. 
 
 \section{Structure of the Thesis}	
+
+First of all, an introduction to the problem we will deal with is made. Following the introduction, we provide a theoretic framework for global illumination problem, then we reviewed some of most important approaches including radiosity, Monte Carlo ray tracing and photon mapping. The GPU-based photon mapping technique is highlighted in the last part of chapter two followed by the analysis its advantages and limitations. 
+
+In chapter three, we presented a new GPU photon mapping approach with detailed information on our current implementation. 
+
+The results of our experiment and the analysis of the results are presented in chapter four. 
+
+Finally, in chapter five we come to the conclusion, and discuss the directions for future work.

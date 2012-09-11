@@ -8,16 +8,18 @@ x=[0 1 2 3 4 5 6 7 8 9];
 % Y-Axis Construction Time
 
 % Photon Mapping
-y=[5338 5431 5400 5398 5320 5373 5319 5417 5450 5403];
+y=[5.338 5.431 5.400 5.398 5.320 5.373 5.319 5.417 5.450 5.403];
 
 % New approach 
-y2=[4923 4969 5089 5027 4943 5066 4960 5096 5060 4945]
+y2=[3.9 3.969 4.089 4.17 4.243 4.06 4.06 4.196 4.060 3.95]
 
 plot(x, y, 'r');hold;plot(x, y2, 'g'); 
 
 legend('Photon Map','KD-Tree Photon Queue')
+xlabel('Frames'); 
+ylabel('Time in seconds'); 
 
-title('Data Structure Construction Time (in ms, 5000 photons total)')
+title('Data Structure Construction Time (in seconds, 5000 photons total)')
 
 hold on
 
