@@ -1,5 +1,6 @@
 # Folders
 notes/tmp
+release/
 
 # LaTeX temp files 
 *.aux
