@@ -1,4 +1,5 @@
 \documentclass[12pt]{report}
+\usepackage{setspace}
 \usepackage{cuthesis}
 \usepackage{amsmath}
 \usepackage[font=small,format=plain,labelfont=bf,up,textfont=up]{caption}
@@ -53,12 +54,15 @@
 
 \begin{document}
 
+
+
+
 \begin{abstract}
-  Text of abstract.  
+
 \end{abstract}
 
 \begin{acknowledgments}
-  Text of acknowledgments.	
+I would like to thank my supervisor, Dr.Thomas Fevens for his advice, encouragment and support throughout my research. 
 \end{acknowledgments}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,8 +72,11 @@
 % Set the page numbering style
 \pagenumbering{arabic}
 \setcounter{page}{1}
+
+%% double spacing
+\begin{spacing}{2.0}
 	
-%-----------------------\textendash
+%-----------------------
 % Chapter 1 : Introduction 
 \include{ch1}
 
@@ -107,5 +114,7 @@
 
 \bibliographystyle{plainnat}               %the bibliography style to use
 \bibliography{refs}
+
+\end{spacing}
 
 \end{document}

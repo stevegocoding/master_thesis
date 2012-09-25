@@ -1,8 +1,5 @@
 \chapter{Background and Related Work}
 
-In this chapter, we will start with the introductions of most important theoretical concepts and frameworks to establish a foundation for the subsequent discussion of global illumination approaches. Then we will make a short survey on various approaches and their strength and weakness when dealing with different phenomena. Afterwards we will highlight GPU-based techniques applied on Monte Carlo ray tracing and photon mapping and discuss some open issues of the current approach for the introduction of our new approach in the following chapter. 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Radiometry Introduction}
@@ -171,7 +168,7 @@ L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Related Work}
+\section{Global Illumination Techniques}
 In this section, we will review the several the most popular approaches to compute the global illuminations including radiosity , Monte Carlo ray tracing and photon mapping and previous work related to these approaches. 
 
 
@@ -182,24 +179,8 @@ Radiosity, also known as finite element approach, is a classic solution to solvi
 Computing the form factors is the most time consuming part because of the initial time complexity of \(O(n^{2})\) of linking \(n\) patches, however when this pre-computing is done the entire scene can be rendered very efficiently. Therefore a lot researchers were focusing on minimizing this performance hit. \citeauthor{Hanrahan:1991:RHR:127719.122740}\cite{Hanrahan:1991:RHR:127719.122740} introduced a technique that constructs a hierarchical representation of the form factor matrix to reduce the computation. \citeauthor{Holzschuch94anefficient}\cite{Holzschuch94anefficient} followed the hierarchical structure and introduced a progressive refinement strategy resulting the form factor only is computed when needed to evaluate the energy transfers from a given surface. 
 
 
-\subsection{Monte Carlo Ray Tracing} 
+\subsection{Ray Tracing} 
 \label{sec:mc_rt} 
-
-\begin{figure}[htp] 
-\begin{center}
-    \fbox{
-	\subfigure[Test subfigure 1]{\includegraphics[scale=0.25]{imgs/rt_01.pdf}}
-	\subfigure[Test subfigure 2]{\includegraphics[scale=0.25]{imgs/rt_02.pdf}}
-	}
-    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{The scenes rendered using Monte Carlo ray tracing by our test program. }
-    \label{fig:rt_images} 
-\end{center} 
-\end{figure}
-
-The classic ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}. It is an elegant and simple algorithm for easily rendering shadows and specular surfaces. 
-
-The ray tracing algorithm can be broke down into two stages: intersection query and shading. In the first stage, as shown in figure \ref{fig:ray_tracing}, for each pixel on our viewing plane, one of more rays (if the multi-sampling is enabled for better image quality) are shot into the scene, these rays directly from the observer are \emph{primary rays}. Then we are trying to find intersection points with the closest object to observer. In the shading stage, at each intersection point the direct illumination is computed based on the BRDF determined by the surface material, the computed radiance is converted to the color of the corresponding pixel. The visibility of the light sources can be evaluated with shadow rays. If the surface material is specular then a specular ray is traced in the reflected or transmitted direction. The indirect illumination can be computed by spawning and tracing reflected or refracted rays (called \emph{secondary rays}) from the intersection points and repeat the ray tracing recursively. 
 
 \begin{figure}[htp] 
     \centering 
@@ -209,7 +190,23 @@ The ray tracing algorithm can be broke down into two stages: intersection query 
     \label{fig:ray_tracing} 
 \end{figure} 
 
+The classic ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}. It is an elegant and simple algorithm for easily rendering shadows and specular surfaces. 
+
+The ray tracing algorithm can be broke down into two stages: intersection query and shading. In the first stage, as shown in figure \ref{fig:ray_tracing}, for each pixel on our viewing plane, one of more rays (if the multi-sampling is enabled for better image quality) are shot into the scene, these rays directly from the observer are \emph{primary rays}. Then we are trying to find intersection points with the closest object to observer. In the shading stage, at each intersection point the direct illumination is computed based on the BRDF determined by the surface material, the computed radiance is converted to the color of the corresponding pixel. The visibility of the light sources can be evaluated with shadow rays. If the surface material is specular then a specular ray is traced in the reflected or transmitted direction. The indirect illumination can be computed by spawning and tracing reflected or refracted rays (called \emph{secondary rays}) from the intersection points and repeat the ray tracing recursively. 
+
 Ray tracing is not a full global illumination algorithm since it cannot handle the computation of the indirect illumination on diffuse surfaces, it can only compute the illumination for perfect specular material by tracing a ray in the refracted or mirror direction. To simulate the phenomena such as soft shadows, it is necessary to employ Monte Carlo sampling techniques\cite{Kajiya:1986:RE:15922.15902}. 
+
+\begin{figure}[htp] 
+\begin{center}
+    \fbox{
+	\subfigure[]{\includegraphics[scale=0.25]{imgs/rt_01.pdf}}
+	\subfigure[]{\includegraphics[scale=0.25]{imgs/rt_02.pdf}}
+	}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[]{The scenes rendered by our test program using Monte Carlo ray tracing. }
+    \label{fig:rt_images} 
+\end{center} 
+\end{figure}
 
 The idea of Monte Carlo technique is to generate a large amount of samples of the rays and evaluate the LTE for every sample using the classic ray tracing technique and average all the results with the Monte Carlo integration to converge the final solution. 
 
@@ -238,10 +235,9 @@ The main disadvantage of Monte Carlo method is that it requires huge amount of s
 
 Accelerating ray tracing by exploiting the hardware have been an active research field as well. Optimizations for modern multi-cores CPUs for ray tracing renderer are presented\cite{Wald:2002:IGI:581896.581899}. 
 
-\subsection{Photon Mapping}
+\section{Photon Mapping}
 
-
-\subsubsection{Concept} 
+\subsection{Concept} 
 
 Photon mapping was developed by Jensen \cite{HenrikWannJensen2004} as an efficient alternative to the Monte Carlo ray tracing techniques especially for simulating the focused light effects, such as caustics. Photon mapping is a two-pass algorithm, photon tracing and radiance estimation. 
 
@@ -270,7 +266,7 @@ be used for photon mapping on current GPU hardware with CUDA programming model.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Photon Mapping On GPU} 
+\section{Photon Mapping On GPU using CUDA} 
 
 In order to move the photon mapping technique onto graphics hardware, we need to do the creation of traversal of kd-tree on the GPU. The first attempt to achieve this was presented in \cite{Purcell:2005:PMP:1198555.1198797}. However their work was limited by the GPU programming model and hardware architecture. 
 
