@@ -17,4 +17,5 @@ release/
 *.blg
 *.doc
 *.asv
+*.bak
 main.pdf
