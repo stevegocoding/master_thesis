@@ -99,6 +99,8 @@ The connection between KD-Tree leaf nodes and photons data is stored as a struct
 
 \subsubsection{Construction}  
 
+\begin{spacing}{1.3} 
+
 \begin{algorithm}[H]
 	\SetAlgoLined
 	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
@@ -106,17 +108,17 @@ The connection between KD-Tree leaf nodes and photons data is stored as a struct
 	\Input{Photons Data} 
 	\Output{KD Leaf Nodes Photons List} 
 
-	\( leafNodesMarks \leftarrow new\ array  \) \\
-	\( leafNodesIndices \leftarrow new\ array  \) \\
-	\( identityIndices \leftarrow (0, 1, 2 ... n) \) \\ 
+	leafNodesMarks 	\(\leftarrow\) new array; \\
+	leafNodesIndices 	\(\leftarrow\) new array; \\
+	identityIndices 	\(\leftarrow\) (0, 1, 2 ... n); \\ 
 
 	\For{All nodes of KD-Tree in parallel} {
-		\( leafNodesMarks \leftarrow mark\ leaf\ nodes  \) \\
+		leafNodesMarks \(\leftarrow\) mark leaf nodes; \\
 	}
 
-	\( leafNodesIndices \leftarrow new\ array  \) \\
-	\(tempArray \leftarrow \) Multiply \(identityIndices\) and \(leafNodesMarks\)
-	\( leafNodesIndices \leftarrow \) Compact \( tempArray \)
+	leafNodesIndices \( \leftarrow \) new array;	 \\
+	tempArray \(\leftarrow\) \emph{Multiply} identityIndices and leafNodesMarks; \\
+	leafNodesIndices \( \leftarrow \) \emph{Compact} tempArray; 
 	 
 	\For{All KD-Tree leaf nodes in parallel} {
 		\For{All photons of current frmae in serial} {
@@ -137,7 +139,9 @@ The connection between KD-Tree leaf nodes and photons data is stored as a struct
 	\label{algo:build_kdleaf_photons} 
 \end{algorithm}
 
- \vspace{20pt}
+\end{spacing}
+
+\vspace{30pt}
 
 In algorithm \ref{algo:build_kdleaf_photons}, it takes two major pieces of input data, the kd-tree data constructed for the scene and the photons data shot in the scene. The photons data is updated every frame by inserting new photons to an big chunk of buffer resides in GPU memory. Similar to the organization of underlying triangle data for kd-tree nodes, the memory for each frame of photons is aligned to a fixed size to enable coalesced memory access which may improve the performance considerably. This is one of the most important good practices for CUDA programming, because if the threads in a block are accessing consecutive memory locations, then all the accesses are combined into a single request by the hardware. However organizing data in this way will bring extra complexity for implementation because we have to keep track of the locations of beginning of next valid chunk of data for data accessing and there will be holes contained in the whole data array. Therefore move the pointer from \(i\)th frame to \(i+1\) frame requires increasing the pointer by maximum size of memory of \(i\)th frame which is aligned to a fixed size. 
 
@@ -163,8 +167,8 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 		Retrive diffuse color at intersection point; \\
 		Retrive the normal vector at intersection point; \\
 		Flip the normal vector if it is needed; \\ 
-		\( irradiance \leftarrow rangeSearch(intersectPoint) \); \\
-		\( radiance \leftarrow colorDiffuse \cdot Pi^{-1} \cdot irradiance \); 	
+		irradiance \(\leftarrow\) rangeSearch(intersectPoint); \\
+		radiance \(\leftarrow\) colorDiffuse \( \cdot Pi^{-1} \cdot\) irradiance; \\ 	
 	}
 	\caption{Radiance estimation with kd-tree and photons queue.} 	
 	\label{algo:render_kdleaf_photons} 
