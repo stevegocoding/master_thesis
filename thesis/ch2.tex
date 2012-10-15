@@ -40,7 +40,7 @@ Radiometry is the basic terminology to describe light which is crucial to simula
     \centering 
     \fbox{\includegraphics{imgs/flux.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Radiant flux from a point light source is passing through the spheres around the light.}
+    \caption[Radiant flux of point light source]{Radiant flux from a point light source is passing through the spheres around the light.}
     \label{fig:flux_point_light} 
 \end{figure} 
 
@@ -67,19 +67,9 @@ Radiance is the most important quantity in rendering simulation since it closely
 
 \begin{figure}[htp] 
     \centering 
-    \fbox{\includegraphics{imgs/solid_angle_sphere.pdf}}
-    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Radiance, L, is defined as the radiant flux per unit solid angle, \(\overrightarrow{\omega}\), per unit projected area, \(dA\)}
-    \label{fig:solid_angle_sphere} 
-\end{figure}
-
-The solid angle used in equation \ref{eq:flux_from_radiance} can be thought as representation of both a direction and an infinitesimal area. Therefore solid angle can also be expressed in spherical coordinates (\(\theta, \phi\))
-
-\begin{figure}[htp] 
-    \centering 
     \fbox{\includegraphics{imgs/radiance_solid_angle.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Radiance, L, is defined as the radiant flux per unit solid angle, \(\overrightarrow{\omega}\), per unit projected area, \(dA\)}
+    \caption[Geometric setup of radiance and solid angle]{Radiance, L, is defined as the radiant flux per unit solid angle, \(\overrightarrow{\omega}\), per unit projected area, \(dA\)}
     \label{fig:radiance_solid_angle} 
 \end{figure} 
 
@@ -104,7 +94,7 @@ Where \(r\) is the distance from \(x\) to the light source and \(\theta\) is the
     \centering 
     \fbox{\includegraphics{imgs/brdf.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{The geometric setup of BRDF. }
+    \caption[Geometric setup of BRDF]{The geometric setup of BRDF. }
     \label{fig:brdf} 
 \end{figure} 
 
@@ -171,7 +161,6 @@ L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, 
 \section{Global Illumination Techniques}
 In this section, we will review the several the most popular approaches to compute the global illuminations including radiosity , Monte Carlo ray tracing and photon mapping and previous work related to these approaches. 
 
-
 \subsection{Radiosity}
 
 Radiosity, also known as finite element approach, is a classic solution to solving the LTE. It was introduced by  \citeauthor{Goral:1984:MIL:964965.808601} in \citep{Goral:1984:MIL:964965.808601} and became an active field that was drawing quite research interest. The underlying idea is to tessellate the surfaces into finite small sub-surfaces called patches as geometric primitives and solve the LTE with them. Solving LTE using radiosity requires several input. First of all the radiosity value for diffuse surfaces or the BRDF for the non-diffuse surfaces need to be stored for all the patches in the scene. Then it requires a known linear system of equations called form factors which denote the amount of light transport between two patches. 
@@ -186,7 +175,7 @@ Computing the form factors is the most time consuming part because of the initia
     \centering 
     \fbox{\includegraphics{imgs/ray_tracing.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Ray Tracing.}
+    \caption[Ray Tracing System Configuration]{A basic configuration of ray tracing rendering system.}
     \label{fig:ray_tracing} 
 \end{figure} 
 
@@ -203,7 +192,7 @@ Ray tracing is not a full global illumination algorithm since it cannot handle t
 	\subfigure[]{\includegraphics[scale=0.25]{imgs/rt_02.pdf}}
 	}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{The scenes rendered by our test program using Monte Carlo ray tracing. }
+    \caption[Test Scenes Rendered Using Monte-Carlo Ray Tracing]{The scenes rendered by our test program using Monte Carlo ray tracing. }
     \label{fig:rt_images} 
 \end{center} 
 \end{figure}
@@ -256,7 +245,7 @@ L_r(x, \omega_{o}) \approx \frac{1}{\pi r^{2}}\sum_{\substack{0<p<N}}f_{r}(x, \o
     \centering 
     \fbox{\includegraphics{imgs/photon_density_estimate.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Photon density estimate.}
+    \caption[Photon Density Estimation Model]{The geometrical setup of photons density estimation.}
     \label{fig:photon_density_estimate} 
 \end{figure} 
 
@@ -290,7 +279,7 @@ After the preprocessing has finished, we process all small nodes in parallel and
     \centering 
     \fbox{\includegraphics[scale=0.4]{imgs/small_node_stage.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Small node splitting.}
+    \caption[The Small Nodes splitting stage within kd-tree construction]{Small node splitting stage following the large nodes  splitting stage in the kd-tree construction process.}
     \label{fig:small_node_splitting} 
 \end{figure} 
 
@@ -304,7 +293,7 @@ After splitting is done, the new nodes are added to the active node list, in ord
     \centering 
     \fbox{\includegraphics[scale=0.4]{imgs/compact_active_list.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Compacting of the active node list.}
+    \caption[Compacting kd-tree nodes in the active node list for next iteration.]{Following the execution of the kernel that splits the kd-tree nodes, a compaction process will be applied on the result nodes in the active node list for the next iteration over the list to build another level of kd-tree.}
     \label{fig:compact_active_list} 
 \end{figure} 
 
@@ -319,4 +308,3 @@ The algorithm starts from an initial conservative search radius \(r_{0}\) and tr
 The GPU approach from \citeauthor{Zhou2008} has a couple of advantages. One is that the nearest neighbor search is fast with the worst time complexity of \(O(k\cdot n^{1-\frac{1}{k}})\) \cite{Lee1977}, where \(k = 3\) for 3 dimension tree. Another advantage is the compact data arrangement of the tree giving a space complexity of \(O(n)\). 
 
 However this approach also suffers from a couple of limitations. First of all, the dynamic lists are extensively used for storing active nodes, small nodes, final tree nodes and so on and only static arrays are used for optimal performance, therefore additional work has to be done to grow the lists by reallocating the memory and data copying which is expensive operation. To avoid the memory management overhead \citeauthor{Zhou2008} double list sizes when the array need to grow. This leads to increased memory consumption during construction and a big performance hit as we need rebuild the kd-tree for photons every frame. Another limitation is the complexity of implementation, there are too many temporary data to maintain during construction and the requirements of many other data primitive algorithm such as scan, split and sort also increase the complexity of this approach. 
-

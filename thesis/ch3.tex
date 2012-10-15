@@ -22,7 +22,7 @@ The update process of photons queue is straightforward. It depends on the photon
     \centering 
     \fbox{\includegraphics{imgs/kd_leaf_photons.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Radiant flux from a point light source is passing through the spheres around the light.}
+    \caption[Association of kd-tree and photons data.]{The photons data will be stored with a connection to the kd-tree for the scene. }
     \label{fig:kd_leaf_photons} 
 \end{figure}  
 
@@ -32,7 +32,7 @@ As shown in figure \ref{fig:kd_leaf_photons}, in addition to the triangle data, 
     \centering 
     \fbox{\includegraphics[width=\linewidth]{imgs/kd_leaf_photons_2.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Radiant flux from a point light source is passing through the spheres around the light.}
+    \caption[Detailed view on organization of photons data for a single leaf node.]{More detailed view on how photons data is organized for a single kd-tree leaf node. There will multiple frames of photons stored in a continuus block of memory.}
     \label{fig:kd_leaf_photons_2} 
 \end{figure}  
 
@@ -72,28 +72,28 @@ The traversal data is compressed into an unsigned integer array, as shown in the
     \centering 
     \fbox{\includegraphics[width=\linewidth]{imgs/kdtree_data_memory_layout.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Compacted kd-tree data memory layout.}
+    \caption[Compacted memory layout of constructed kd-tree data]{Compacted kd-tree data memory layout which is friendly to kd-tree traversal.}
     \label{fig:kdtree_data_memory_layout} 
 \end{figure}  
 
 Where root\_info, left\_info and right\_info are the parent information for the root, left and right child node(if left and right node are inner nodes). This is a compressed form of what is needed during kd-tree traversal. Parent information stores two unsigned integers, hence two elements in the d\_preorder\_tree array. The first unsigned integer contains several information of the inner node: the split axis takes 2 most significant bits and address of right node in the d\_preorder\_tree array, which is 0 if it is a leaf node, take the rest bits. The second unsigned integer stores the split position(a float value stored as unsigned integer). The address of left child node is not stored explicitly as it can be computed by skipping the parent info(2 unsigned integers) from current node's address. The 2 bits for split axis can represent \(x\) axis if it is 0, \(y\) axis if it is 1 and \(z\) axis if it is 2. 
 
-Where the root\_idx, left\_idx and right\_idx are the indices of the root, left and right nodes. The indices can be used to access the other arrays such as the node extents array. The type information of the nodes is also encoded in the indices, if it is a leaf node, the most significant bit(MSB) is set, else the MSB is not set, this improves leaf detection performance because it avoids reading child information. The above format applies only for inner nodes, for leafs, instead of parent information, element count and element indices are stored. The element indices are relative to the underlying triangle data. Hence we have the following format: 
+Where the root\_idx, left\_idx and right\_idx are the indices of the root, left and right nodes. The indices can be used to access the other arrays such as the node extents array. The type information of the nodes is also encoded in the indices, if it is a leaf node, the most significant bit(MSB) is set, else the MSB is not set, this improves leaf detection performance because it avoids reading child information. The above format applies only for inner nodes, for leafs, instead of parent information, element count and element indices are stored. The element indices are relative to the underlying triangle data. Hence we have the following format shown in figure \ref{fig:kdtree_leaf_memory_layout}: 
 
 \begin{figure}[htp] 
     \centering 
     \fbox{\includegraphics{imgs/kdtree_data_memory_layout_2.pdf}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
-    \caption[]{Compacted kd-tree data memory layout.}
-    \label{fig:kdtree_data_memory_layout} 
+    \caption[Compacted memory layout of kd-tree leaf nodes]{The compacted memory layout of kd-tree leaf nodes.} 
+    \label{fig:kdtree_leaf_memory_layout} 
 \end{figure}  
 
 \paragraph{Photons Data} 
 
-
 \paragraph{Connection Between KD-Tree and Photons Data} 
 
-The connection between KD-Tree leaf nodes and photons data is stored as a structure of several data array like storing other type of data on GPU side. 
+The connection between kd-tree leaf nodes and photons data is stored similarly to the memory layout shown in figure \ref{fig:kdtree_leaf_memory_layout}. Instead of triangle data, the indices of photons traced into the scene of the current frame is stored as the elements. 
+
 
 \subsection{Algorithm Description} 
 
