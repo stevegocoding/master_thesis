@@ -14,6 +14,7 @@ y=[5.338 5.431 5.400 5.398 5.320 5.373 5.319 5.417 5.450 5.403];
 y2=[3.9 3.969 4.089 4.17 4.243 4.06 4.06 4.196 4.060 3.95]
 
 plot(x, y, 'r');hold;plot(x, y2, 'g'); 
+set(gca,'YLim',[0 6])
 
 legend('Photon Map','KD-Tree Photon Queue')
 xlabel('Frames'); 
