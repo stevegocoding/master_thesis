@@ -1,6 +1,6 @@
 \documentclass[12pt]{report}
 \usepackage{setspace}
-\usepackage{here} 
+\usepackage{here}
 \usepackage{cuthesis}
 \usepackage{amsmath}
 \usepackage[font=small,format=plain,labelfont=bf,up,textfont=up]{caption}
@@ -28,13 +28,13 @@
          basicstyle=\small\ttfamily,
          %numbers=left,               % Ort der Zeilennummern
          numberstyle=\tiny,          % Stil der Zeilennummern
-         %stepnumber=2,               % Abstand zwischen den Zeilennummern 
+         %stepnumber=2,               % Abstand zwischen den Zeilennummern
          numbersep=5pt,              % Abstand der Nummern zum Text
          tabsize=2,                  % Groesse von Tabs	
          extendedchars=true,         %
          breaklines=true,            % Zeilen werden Umgebrochen
          %keywordstyle=\color{red},
-         %frame=t|b,         
+         %frame=t|b,
  %        keywordstyle=[1]\textbf,    % Stil der Keywords
  %        keywordstyle=[2]\textbf,    %
  %        keywordstyle=[3]\textbf,    %
@@ -47,19 +47,18 @@
          framexrightmargin=5pt,
          framexbottommargin=4pt,
          %backgroundcolor=\color{lightgray},
-         showstringspaces=false,      % Leerzeichen in Strings anzeigen ? 
+         showstringspaces=false,      % Leerzeichen in Strings anzeigen ?
          captionpos=b,
 		language=C++,
- } 
+ }
 
 \begin{document}
 
-\begin{abstract}
-
-\end{abstract}
+%\begin{abstract}
+%\end{abstract}
 
 \begin{acknowledgments}
-First of all, I would like to thank my supervisor, Dr.Thomas Fevens for his advice, encouragment and support throughout my research. I would also like to thank my parents and my girfriend Chunxiao Ma who are supportive as always.
+First of all, I would like to thank my supervisor, Dr.Thomas Fevens for his advice, encouragement and support throughout my research. I would also like to thank my parents and my girlfriend Chunxiao Ma who are supportive as always.
 \end{acknowledgments}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,21 +74,21 @@ First of all, I would like to thank my supervisor, Dr.Thomas Fevens for his advi
 	
 %-----------------------
 % Chapter 1 : Introduction
-\include{ch1} 
+\include{ch1}
 
 %-------------------------
 % Chapter 2:  Background
 
-% Theoretical 
+% Theoretical
 %- Radiometry Introduction.
 %- BRDF 	
-%- Rendering equation and LTE equation 
-%- Monte-Carlo Ray Tracing. 
+%- Rendering equation and LTE equation
+%- Monte-Carlo Ray Tracing.
 %- Photon Mapping
 
-% Technical 
+% Technical
 %- KD-Tree Construction and representatoion on GPU
-%- Photons KNN search using KD-Tree   
+%- Photons KNN search using KD-Tree
 \include{ch2}
 
 %-------------------------
@@ -97,7 +96,7 @@ First of all, I would like to thank my supervisor, Dr.Thomas Fevens for his advi
 \include{ch3}
 
 %-------------------------
-% Chapter 4: Result and Analysis 
+% Chapter 4: Result and Analysis
 \include{ch4}	
 
 %o-------------------------
@@ -105,7 +104,7 @@ First of all, I would like to thank my supervisor, Dr.Thomas Fevens for his advi
 \include{ch5}		
 
 %-------------------------
-% Appendix 
+% Appendix
 %\include{appendix}				
 %-------------------------
 
