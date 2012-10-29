@@ -212,15 +212,17 @@ Computing the form factors is the most time consuming part because of the initia
 
 The classic ray tracing technique became popular in Computer Graphics since 1980 with an introduction of the recursive ray-tracing algorithm by Whitted \cite{Whitted1980}. It is an elegant and simple algorithm for easily rendering shadows and specular surfaces.
 
-The ray tracing algorithm can be broke down into two stages: intersection query and shading. In the first stage, as shown in figure \ref{fig:ray_tracing}, for each pixel on our viewing plane, one or more rays (if the multi-sampling is enabled, this allows for better image quality) are shot into the scene. Those rays directly from the observer are \emph{primary rays}. Then we try to find intersection point along each of the rays with the closest object to the observer. In the shading stage, at each intersection point the direct illumination is computed based on the BRDF determined by the surface material. The computed radiance is converted to the color of the corresponding pixel. The visibility of the light sources can be evaluated with shadow rays.
+The ray tracing algorithm can be broke down into two stages: intersection query and shading. In the first stage, as shown in figure \ref{fig:ray_tracing}, for each pixel on our viewing plane, one or more rays (if the multi-sampling is enabled, this allows for better image quality) are shot into the scene. Those rays directly from the observer are \emph{primary rays}. Then we try to find intersection point along each of the rays with the closest object to the observer. In the shading stage, at each intersection point the direct illumination is computed based on the BRDF determined by the surface material. The computed radiance is converted to the color of the corresponding pixel. The visibility of the light sources can be evaluated by casting rays from surface locations to the light souces trying to find any intersections with other objects other than lights, these rays are also known as shadow rays.
 % TF: Explain how shadow rays work.
+% Steve: done
+
 If the surface material is specular then a specular ray is traced in the reflected or transmitted direction. The indirect illumination can be computed by spawning and tracing reflected or refracted rays (called \emph{secondary rays}) from the intersection points and repeating the ray tracing recursively.
 
-Ray tracing is not a full global illumination algorithm since it cannot handle the computation of the indirect illumination on diffuse surfaces; it can only compute the illumination for perfect specular material by tracing a ray in the refracted or mirror direction. To simulate the phenomena such as soft shadows, it is necessary to employ Monte Carlo sampling techniques\cite{Kajiya:1986:RE:15922.15902}.
+Ray tracing is not a full global illumination algorithm since it cannot handle the computation of the indirect illumination on diffuse surfaces; it can only compute the illumination for perfect specular material by tracing a ray in the refracted or mirror direction. To simulate the phenomena such as soft shadows, it is necessary to employ Monte Carlo sampling techniques\cite{Kajiya:1986:RE:15922.15902}. Figure \ref{fig:rt_images} shows two images rendered by our rendering program, the scene on the right side contians an area light to produce soft shadows casted by objects rather than hard shadow produced with a point light in the left scene. 
 
 \begin{figure}[htp]
 \begin{center}
-    \fbox{\subfigure[]{\includegraphics[scale=0.25]{imgs/rt_01.pdf} \subfigure[]{\includegraphics[scale=0.25]{imgs/rt_02.pdf}}}}
+    \fbox{\subfigure{\includegraphics[scale=0.25]{imgs/rt_01.pdf} \subfigure{\includegraphics[scale=0.25]{imgs/rt_02.pdf}}}}
     \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
     \caption[Test Scenes Rendered Using Monte-Carlo Ray Tracing]{The scenes rendered by our test program using Monte Carlo ray tracing. }
     \label{fig:rt_images}
@@ -228,6 +230,7 @@ Ray tracing is not a full global illumination algorithm since it cannot handle t
 \end{figure}
 
 % TF: Need to reference this figure in the text.
+% Steve: done
 
 The idea of the Monte Carlo technique is to generate a large amount of samples of the rays and evaluate the LTE for every sample using the classic ray tracing technique and average all the results with the Monte Carlo integration to converge to the final solution.
 
@@ -280,8 +283,9 @@ L_r(x, \omega_{o}) \approx \frac{1}{\pi r^{2}}\sum_{\substack{0<p<N}}f_{r}(x, \o
 \end{figure}
 
 \subsection{GPU-based Implementations}
-There have already been a couple of successful attempts made to implement global illumination techniques on GPUs. \citeauthor{Purcell:2002:RTP:566654.566640} \cite{Purcell:2002:RTP:566654.566640} presented the first ray tracer entirely running on GPU using a uniform grid for acceleration. \cite{Horn:2007:IKT:1230100.1230129} and \cite{Popov2007} presented the GPU implementations that achieved better performance than a CPU-based ray tracer. With the introduction of general purpose computing on GPU especially with CUDA technology, \citeauthor{Luebke2008} \cite{Luebke2008} presented a technology combining ray tracing and traditional rasterization methods to achieve real-time performance on dynamic scenes.
+There have already been a couple of successful attempts made to implement global illumination techniques on GPUs. \citeauthor{Purcell:2002:RTP:566654.566640} \cite{Purcell:2002:RTP:566654.566640} presented the first ray tracer entirely running on GPU using a uniform grid for acceleration. \cite{Horn:2007:IKT:1230100.1230129} and \cite{Popov2007} presented the GPU implementations that achieved better performance than a CPU-based ray tracer. With the introduction of general purpose computing on GPU especially with CUDA technology, \citeauthor{Luebke2008} \cite{Luebke2008} presented a technology combining ray tracing and traditional rasterization methods to achieve real-time performance on dynamic scenes. Since the hardware-accerlerated rendering pipeline is employed, their implementation could handle the scenes with moving light sources and dynamic scene objects only tracing the rays directly casted from the camera (primary rays) and shadow rays, the full global illumination is still too slow for interactive application. 
 % TF: Were there any restrictions on how dynamic the scene could be?
+% Steve: done
 
 Photon mapping has been mapped for multi-core CPUs in \cite{gunther:realtime} and for the older GPU architecture using programmable vertex/pixel shaders in \cite{Purcell:2005:PMP:1198555.1198797}. In the following sections, we will take a look at the techniques that can
 be used for performing photon mapping on current GPU hardware with CUDA programming model.
@@ -295,6 +299,7 @@ In order to move the photon mapping technique onto graphics hardware, we need to
 More general work on parallel kd-tree construction was presented in \cite{popov:06:ESC} and \cite{Shevtsov_highlyparallel}. Both approaches are designed for multi-core CPUs thus are not suitable for GPU. The first problem is that kd-tree construction can easily become bandwidth limited on large input data sets due to its random memory access pattern. Therefore the construction switches from breadth first search (BFS) to depth first search (DFS) manner manner at deeper nodes. This means that these approaches keep the number of concurrently running threads pretty low. GPU hardware, however, is good at having a massive number of threads (at least \(10^{3} - 10^{4}\) running for
 %optimal threads\cite{Guide2012}.
 % TF: I assume you meant:
+% Steve: yes, done
 optimal performance \cite{Guide2012}.
 Another aspect is finding the split position for a node. Both papers use the Surface Area Heuristic (SAH) \cite{springerlink:10.1007/BF01911006} to evaluate the costs for a splitting candidate. Even though the SAH improves kd-tree significantly \cite{wald::PhD}, it is very time consuming.
 
@@ -302,13 +307,18 @@ Finally, parallelizing the photon search or tree traversing is relatively easy, 
 
 \citeauthor{Zhou2008} presented a new approach to kd-tree construction and traversal on GPUs using CUDA \cite{Zhou2008}. They also provide information on adapting the technique for photon mapping which we will focus on.
 
-\subsection{kd-Tree Construction}
+\subsection{KD-Tree Construction}
 \label{subsec:kdtree_construction}
 
-\citeauthor{Zhou2008} build the kd-tree in BFS manner completely. 
+KD-tree standing for k-dimensional tree, is a space-partitioning data structure used for organizing geometry in a k-dimensional space by encoding the spatial information of geometric objects into a special case of binary tree to provide optimal search performance. The kd-tree used in Computer Graphics is usually 3-dimensional tree since the spatial information is modeled in 3D space. Construction of kd-tree involves recursively splitting the space with a chosen axis-aligned splitting plane. This process is usually done in a depth-first fashion with call the split routine recursively to create new nodes. However in the GPU implementation this depth-first approach is not ideal. Firstly the recursion is not supported currently by the GPU programming model, this issue can be avoided by transforming the recursion into iteration, but it is still not optimal since it does not take the advantage of the massive parallelism of the graphics processor. While \citeauthor{Zhou2008} build the kd-tree in breadth-first manner completely to avoid these issues. 
+
 % TF: what is the k in kd-tree? Perhaps give a formal definition of a kd-tree.
-During the initialization stage, CUDA's global memory is allocated for the tree construction and the root node is created. For the photon mapping implementation we also have to create three sorted order lists for each dimension for all point coordinates. The points can be grouped into chunks and the bounding box of the node can be computed with segmented reduction.
+% Steve: done
+
+During the initialization stage, CUDA's global memory is allocated for the tree construction and the root node is created. For the photon mapping implementation we also have to create three sorted order lists for each dimension for all point coordinates. The points can be grouped into chunks and we need to compute the tight bounding box of the current list of nodes, each node in this list contains certain numbers of chunks that are stored in a list as well. The first step to achieve this is to compute the tight bounding box of each chunk, this is a straight-forward process that only requires us to iterate over all the points in a chunk and find the minimum and maximum coordinates. The second step is to combine the bounding boxes of the chunks that belong to one same node to determine the bounding box of the node. This can be done by segmented reduction. The chunks that belong to one same node become a segment, we combine the bounding boxes on these segments respectively rather than combining over the entire list of chunks. 
+
 % TF: Explain "segmented reduction"
+% Steve: done
 Additionally we maintain three associated point ID lists (one for each coordinate axis).
 
 The first stage of construction is called large node stage. In this stage splits nodes using a combination of spatial median splitting and "cutting off empty space" \cite{Havran2000:PhD}. Since in this stage the number of nodes is small, it is better to perform the computation parallelized over all points rather than over nodes. First we need to find the splitting plane (the plane that splits the longest axis in the middle), after repeatedly applying empty space splitting before. Then each photon is classified as being either left (1) or right (0) of the splitting plane. Finally, we perform the scan operation \cite{Mark2007}. After the split we check if the amount of photons in our child nodes is below the threshold \(T = 32\). If the number is smaller, the node is added to the small node list. Otherwise it is added to the active list and scheduled for the next iteration of the large node stage. The large node stage finishes as soon as there are no more nodes in the active list.
@@ -342,15 +352,17 @@ After splitting is done, the new nodes are added to the active node list, in ord
 The final stage is the kd-tree output stage, the tree is reorganized to change its layout to a preorder traversal of nodes to improve memory access performance. Firstly we perform a bottom-top traversal to determine the size of the array for preorder tree structure. Then we use another top-down traversal to calculate each node's address and generate tree from sizes. The final output includes the node's bounding box, split plane and the references to its children and the photon's position and power.
 
 \subsection{Photon Search}
-In \cite{HenrikWannJensen2004}, Jensen presented a photon searching technique using the priority queue with kd-tree. Unfortunately it is not possible to implement a priority queue with CUDA efficiently since the memory access is incoherent and almost all arithmetic is independent, thus it makes difficult for hardware to hide latency. Therefore \citeauthor{Zhou2008} propose an iterative $K$-Nearest Neighbor (KNN) range search algorithm based on \cite{Preparata:1985:CGI:4333}.
+To estimate the radiance at a surface point, the k-nearest photons around the sample point need to be located and filtered. In \cite{HenrikWannJensen2004}, Jensen presented a photon searching technique using the priority queue with kd-tree. Unfortunately it is not possible to implement a priority queue with CUDA efficiently since the memory access is incoherent and almost all arithmetic is independent, thus it makes difficult for hardware to hide latency. Therefore \citeauthor{Zhou2008} propose an iterative $K$-Nearest Neighbor (KNN) range search algorithm based on \cite{Preparata:1985:CGI:4333}, which is performed using a standard stack-based depth-first search kd-tree traversal algorithm. This algorithm can be efficient thanks to the fast CUDA's local memory for the stack. Instead of denoting the number of dimensions in kd-tree, \(k\) used here represents the target number of photons that are most nearest to surface point. 
 % TF: Perhaps define in some detail what is a KNN range search, especially since it is crucial to your approach..
 % TF: Also: how does the K in KNN relate to k in kd-tree? Could be confusing to the reader.
+% Steve: done 
 
-The algorithm starts from an initial conservative search radius \(r_{0}\) and tries to find the query radius \(r_{k}\) through a couple of iterations. For each iteration, a histogram of photon numbers over different radius ranges is created and the final radius is reduced from it. The final radius \(r_{k}\) is then used for range search which returns all photons within that radius. The range search is implemented using the DFS kd-tree traversal algorithm \cite{Preparata:1985:CGI:4333}.
+The algorithm starts from an initial conservative search radius \(r_{0}\) and tries to find the query radius \(r_{k}\) through a couple of iterations. For each iteration, a histogram of photon numbers over different radius ranges is created and the final radius is reduced from it. The final radius \(r_{k}\) is then used for range search which returns all photons within that radius. 
 
 \subsection{Advantages and Limitations}
 The GPU approach from \citeauthor{Zhou2008} has a couple of advantages. One is that the KNN search is fast with the worst time complexity of \(O(k\cdot n^{1-\frac{1}{k}})\) \cite{Lee1977}, where \(k = 3\) for a three dimensional kd-tree.
 % TF: This k the same as for the kd tree?
+% Steve: yes, done.
 Another advantage is the compact data arrangement of the tree giving a space complexity of \(O(n)\).
 
 However this approach also suffers from a couple of limitations. First of all, the dynamic lists are extensively used for storing active nodes, small nodes, final tree nodes and so on and only static arrays are used for optimal performance, therefore additional work has to be done to grow the lists by reallocating the memory and data copying which is expensive operation. To avoid the memory management overhead \citeauthor{Zhou2008} double list sizes when the array need to grow. This leads to increased memory consumption during construction and a big performance hit as we need rebuild the kd-tree for photons every frame. Another limitation is the complexity of implementation, there are too much temporary data to maintain during construction and the requirements of many other data primitive algorithms such as scan, split and sort also increase the complexity of this approach.
