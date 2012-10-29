@@ -56,7 +56,7 @@ L(x, \overrightarrow{\omega}) = \frac{d^{2}\Phi}{\cos{\theta} \cdot dA \cdot d\o
 \end{equation}
 where \(x\) is the position and \(\overrightarrow{\omega}\) is the direction.
 
-Radiance is the most important quantity in rendering simulation since it closely represents the color. Also radiance can be considered as the number of photons arriving per time at a small area from a given direction. Radiant energy can be computed by integrating the radiance field over all directions \(\Omega\) and area \(A\).
+Radiance is the most important quantity in rendering simulation since it closely represents the color. Also radiance can be considered as the number of photons arriving per time at a small area from a given direction. Radiant energy can be computed by integrating the radiance field over all directions \(\Omega\) and area \(A\). The geometric setup for the radiance definition is illustrated in the figure \ref{fig:radiance_solid_angle}. 
 
 \begin{equation}
 \Phi = \int_{A}\int_{\Omega}L(x, \overrightarrow{\omega})(\overrightarrow{\omega} \cdot \overrightarrow{n})d\overrightarrow{\omega}dx
@@ -64,6 +64,7 @@ Radiance is the most important quantity in rendering simulation since it closely
 \end{equation}
 
 % TF: The following figure should be referenced in the text somewhere.
+% Steve: done
 
 \begin{figure}[htp]
     \centering
@@ -114,7 +115,7 @@ Another important physical property of BRDF is energy conservation, stating that
  \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \omega_{i})(\omega_{i} \cdot n)d\omega_{i} \leq 1 , \forall \omega_{i}
 \end{equation}
 
-Note that there are special cases exists in the BRDF model, one is the \emph{Lambertian} BRDF in which the outgoing direction is independent from the incident direction. Another extreme case is the perfect mirror reflection BRDF which is a Dirac delta function making the incident direction \(\omega_{i}\) mirrored at the surface normal at the \(p\) on the surface. BRDF including these two special cases is often broadly classified as directional diffuse, and glossy and specular.
+Note that there are special cases exists in the BRDF model, one is the \emph{}{Lambertian} BRDF in which the outgoing direction is independent from the incident direction. Another extreme case is the perfect mirror reflection BRDF which is a Dirac delta function making the incident direction \(\omega_{i}\) mirrored at the surface normal at the \(p\) on the surface. BRDF including these two special cases is often broadly classified as directional diffuse, and glossy and specular.
 
 Given the definition of BRDF, we can introduce the basic rendering equation, also known as \emph{local illumination model} by integrating the equation \ref{eq:brdf} over the sphere of incident directions around location \(p\), the left side of the equation will be the outgoing radiance in direction \(\omega_{o}\).
 \begin{equation}
@@ -124,10 +125,10 @@ L_{o}(p, \omega_{o}) = \int_{\Omega}f_{r}(p, \omega_{i}, \omega_{o})L_{i}(p, \om
 where \(\Omega\) is the hemisphere of incoming directions at \(p\).
 
 \subsection{Visibility}
-Another important component is the visibility computation.
-% TF: Add a bit of discussion regarding visibility. I.e., what is it in general terms and why important for lighting.
-It is often modeled as a binary function denoted by \(V(x, x')\).
-We have following equation:
+% TF: Add a bit of discussion regarding visibility. I.e., what is it in general terms and why important for lighting. 
+% Steve: done
+
+Another important component is the visibility computation. It is often modeled as a binary function denoted by \(V(x, x')\) as shown in the following equation. Where \(x\) and \(x'\) are two points located on two surfaces. The most important usage of visibility test function is to determine whether a surface point is directly "visible" to a light source for correct simulation. In finite element algorithm like radiosity, the visibility between two surface locations is a essential factor in the rendering equation to compute the radiance leaving \(x\) in the direction towards \(x'\), futher discussion on rendering equation and radiosity will be presented in the following sections. 
 
   \begin{equation}
     V(x, x')=\left\{
@@ -136,6 +137,7 @@ We have following equation:
       0  & \text{otherwise}
     \end{array}
     \right.
+    \label{eq:visibility_test}
   \end{equation}
 
 Ray casting is the most widely used operator to determine the closest surface in a direction by shooting a ray into the scene trying to find the closest intersection point with the surface. We will discuss ray casting and ray tracing technique further in section \ref{sec:mc_rt}.
@@ -153,17 +155,49 @@ L_{o}(p, \omega_{o}) = L_{e}(p, \omega_{o}) + \int_{\Omega}f_{r}(p, \omega_{i}, 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Global Illumination Techniques}
+\section{Global Illumination Techniques} 
 In this section, we will review the several the most popular approaches to compute the global illuminations including radiosity, Monte Carlo ray tracing and photon mapping, and the previous work related to these approaches.
 
 \subsection{Radiosity}
 
-Radiosity, also known as finite element approach, is a classic solution to solving the LTE. It was introduced by  \citeauthor{Goral:1984:MIL:964965.808601} in \citep{Goral:1984:MIL:964965.808601} and has became an active field that was drawn quite a bit of research interest. The underlying idea is to tessellate the surfaces into finite small sub-surfaces called patches as geometric primitives and solve the LTE with them. Solving the LTE using radiosity requires several input. First of all the radiosity value for diffuse surfaces or the BRDF for the non-diffuse surfaces need to be stored for all the patches in the scene. Then it requires a known linear system of equations called form factors which denote the amount of light transport between two patches.
+Radiosity, also known as finite element approach, is a classic solution to solving the LTE. It was introduced by  \citeauthor{Goral:1984:MIL:964965.808601} in \citep{Goral:1984:MIL:964965.808601} and has became an active field that was drawn quite a bit of research interest. The underlying idea is to tessellate the surfaces into finite small sub-surfaces called patches as geometric primitives and solve the LTE with them. Solving the LTE using radiosity requires several input. First of all the radiosity value for diffuse surfaces or the BRDF for the non-diffuse surfaces need to be stored for all the patches in the scene. Then it requires a known linear system of equations called form factors which denote the amount of light transport between two patches. Before presenting the definition of form factor, a geometry term \(G\) is introduced with the following equation: 
+
+\begin{equation}
+G(x, x') = \frac{(\omega' \cdot n')(\omega \cdot n)}{\|x' - x\|^2}
+\label{eq:geometry_term}
+\end{equation} 
+
+Where \(x'\) is another surface location. We introduce the geometry term since for finite element algorithm the rendering euqation is normally expressed as an integral over surface locations ranther than ray directions used in ray tracing algorithm. 
+
+Thus the form factor \(F_{ij}\) representing the fraction of power leaving patch \(i\) that arrives at patch \(j\) is computed as:
+
+\begin{equation}
+F_{ij} = \frac{1}{A_i} \int_{A_i} \int_{A_j} \frac{V(x, x')G(x, x')}{\pi} dA_j dA_i 
+\label{eq:form_factor}
+\end{equation} 
+
+where \(V(x, x')\) is the visibility test operator introduced in the equation \ref{eq:visibility_test}.
+
+%The rendering equation \ref{eq:lte} can be rewritten as:
+%\begin{equation}
+%L_{o}(x, \omega) = L_{e}(x, \omega) + \int_{S}f_{r}(x, x' \rightarrow x, \omega)L_{i}(x' \rightarrow x)V(x, x')G(x, x')dA' 
+%\label{eq:lte_radiosity}
+%\end{equation}
+
+%\(L_{i}(x' \rightarrow x)\) denotes the radiance leaving \(x'\) in the direction towards \(x\) and where \(V(x, x')\) is the visibility test operator introduced in the equation \ref{eq:visibility_test}.
 
 % TF: A picture would help.
+% Steve: done
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\includegraphics[scale=0.4]{imgs/form_factor.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Form factor geometry for two patches]{Geometry factor for two patches}
+    \label{fig:form_factor}
+\end{figure}
 
 Computing the form factors is the most time consuming part because of the initial time complexity of \(O(n^{2})\) of linking \(n\) patches, however when this pre-computation is done the entire scene can be rendered very efficiently. Therefore a lot researchers have focused on minimizing this performance hit. \citeauthor{Hanrahan:1991:RHR:127719.122740} \cite{Hanrahan:1991:RHR:127719.122740} introduced a technique that constructs a hierarchical representation of the form factor matrix to reduce the computation. \citeauthor{Holzschuch94anefficient} \cite{Holzschuch94anefficient} followed a hierarchical structure and introduced a progressive refinement strategy resulting the form factor only being computed when needed to evaluate the energy transfers from a given surface.
-
 
 \subsection{Ray Tracing}
 \label{sec:mc_rt}
@@ -248,6 +282,7 @@ L_r(x, \omega_{o}) \approx \frac{1}{\pi r^{2}}\sum_{\substack{0<p<N}}f_{r}(x, \o
 \subsection{GPU-based Implementations}
 There have already been a couple of successful attempts made to implement global illumination techniques on GPUs. \citeauthor{Purcell:2002:RTP:566654.566640} \cite{Purcell:2002:RTP:566654.566640} presented the first ray tracer entirely running on GPU using a uniform grid for acceleration. \cite{Horn:2007:IKT:1230100.1230129} and \cite{Popov2007} presented the GPU implementations that achieved better performance than a CPU-based ray tracer. With the introduction of general purpose computing on GPU especially with CUDA technology, \citeauthor{Luebke2008} \cite{Luebke2008} presented a technology combining ray tracing and traditional rasterization methods to achieve real-time performance on dynamic scenes.
 % TF: Were there any restrictions on how dynamic the scene could be?
+
 Photon mapping has been mapped for multi-core CPUs in \cite{gunther:realtime} and for the older GPU architecture using programmable vertex/pixel shaders in \cite{Purcell:2005:PMP:1198555.1198797}. In the following sections, we will take a look at the techniques that can
 be used for performing photon mapping on current GPU hardware with CUDA programming model.
 
