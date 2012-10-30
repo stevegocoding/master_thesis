@@ -1,3 +1,5 @@
+\setcounter{figure}{0} 
+
 \chapter{Simulation Result}
 
 In the first section, we will have an overview on our simulation program and our testing environment. Then in the following section, the simulation results and analysis will be presented as concept proof of our new approach.
@@ -61,8 +63,10 @@ We use the CUDA Toolkit 4.2 and Microsoft Visual Studio 2012 as the base CUDA de
 % TF: In the following you compare with a "brute force" method. You should define what you mean by that. Is it
 % TF: the standard photon mapping implementation? If so, explain that and add references, especially if you are
 % TF: using a specific implementation.
+% Steve: done
+The approach that we make comparison with is standard GPU-based photon mapping. Two kd-trees are built for both ray-tracing accerleration structure and global photon mapping. The implementation of the kd-tree construction and photon searching is based on the algorithms in \cite{Zhou2008}. For each frame, all the photons of the light source are shot into the scene and the kd-tree for the photon map is re-constructed. In the following we will use the "brute force" approach to represent this standard implementation. 
 
-% \subsection{Test Scene Specification}
+% \subsection{Test Scene Specification}  
 
 \section{Data Structure Construction}
 \label{sec:build_time}
@@ -199,7 +203,6 @@ In figure \ref{fig:pm_global}, we firstly present the result image rendered with
 The following series of images groups rendered with our new approach is a frame sequence rendering a scene with moving point light source. %The figure \ref{fig:pq_frame_1} frame is rendered with the point light located in the default position.
 
 \begin{figure}
-
 \begin{center}
 \setlength{\tabcolsep}{0mm}
 \subfigure[]{%	Result Image
@@ -272,7 +275,75 @@ The following series of images groups rendered with our new approach is a frame 
 
 As shown in figure \ref{fig:result_images1}, figure \ref{fig:result_images2} and figure \ref{fig:result_images3}, the quality of 	result images become better and finally stable after a certain number of frames. It is not difficult to understand why we have such result according to our algorithm, as we trace fewer photons for each frame, the beginning few images apparently are less illuminated by the light source, in the following frames, we keep shooting and more photons into the scene and accumulating the photons to the photons queue. Therefore we can visualize more and more photons and the scene becomes brighter. The number of photons in the scene will become stable when the maximum frames, since there are same amount of photons traced as they are supposed to be compares to the standard approach. Eventually we will achieve same image quality as of the standard photon mapping.
 
+Figure \ref{fig:new_vs_standard} shows that the images rendered by our approach produces the same quality as of the brute force approach. 
+
+\begin{figure}[htp]
+\begin{center}
+	\begin{tabular}{c | c}
+		\includegraphics*[width=0.35\textwidth]{imgs/pq_frame9.pdf} &
+		\includegraphics*[width=0.35\textwidth]{imgs/pq_ref.pdf}
+	\end{tabular}
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+\caption[Comparison of images rendered by the brute force implementation and new approach with full amount of photons]{Rendered images and photons visualization using brute force implementation (left) and the our new method with full amount of photons (right). }
+    \label{fig:new_vs_standard}
+\end{center}
+\end{figure}
+
+In the following group of tests, we present how the image quality changes with the moving light source using our approach. We move the light source from the world coordinates (-6, 10, 6) to (6, 10, -6) using 4 frames and move it back to (-6, 10, 6), it takes 7 frames in total. While the light source moving, our new renderer updates the kd-tree to store more photons, it will have the maximum number of photons which is 200000 at 4th frame and continue updating photons queue by moving forward the start index to maintain the proper range of photons. We will make a side-by-side image comparison with the standard approach for each frame.   
+
+\begin{figure}
+\begin{center}
+\setlength{\tabcolsep}{0mm}
+\subfigure[]{%	Result Image
+\begin{tabular}{c}
+\includegraphics*[scale=0.2]{imgs/pq2_frame0.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_frame1.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_frame2.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_frame3.pdf}
+\end{tabular}
+}%
+\subfigure[]{%	Photons Visualization
+\begin{tabular}{c}
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame0.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame1.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame2.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame3.pdf}
+\end{tabular}
+}%
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+\caption[Comparison of image quality from frame 0 to 3 with moving light]{Comparison of image quality from frame 0 to 3 with moving light for the new approach (left) and standard method (right). Corresponding to each frame the positions of the light source are (-6, 10, 6), (-2, 10, 2), (2, 10, -2), (6, 10, -6). The number of photons maintained by our photons queue are 20000, 100000, 150000 and 200000 for each frame.}
+\label{fig:result2_images1}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\setlength{\tabcolsep}{0mm}
+\subfigure[]{%	Result Image
+\begin{tabular}{c}
+\includegraphics*[scale=0.2]{imgs/pq2_frame4.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_frame5.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_frame6.pdf}
+\end{tabular}
+}%
+\subfigure[]{%	Photons Visualization
+\begin{tabular}{c}
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame4.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame5.pdf}\\
+\includegraphics*[scale=0.2]{imgs/pq2_ref_frame6.pdf}
+\end{tabular}
+}%
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+\caption[Comparison of image quality from frame 4 to 6 with moving light]{Comparison of image quality from frame 4 to 6 with moving light for the new approach (left) and standard method (right). Corresponding to each frame the positions of the light source are (2, 10, -2), (-2, 10, 2), (-6, 10, 6). }
+\label{fig:result2_images2}
+\end{center}
+\end{figure}
+
+In figure \ref{fig:result2_images1}, we can see that from frame 0 to frame 3, the scene on the left is less illuminated since there are less photons shot into the scene than there is supposed be emitted from the light source. We use these 3 frames to prepare the photons queue by update it incrementally. In the last frame, the image quality is similar to that of the standard approach since there are full amount of photons stored. Figure \ref{fig:result2_images2} shows that our new technique can achieve very goog image quality with the dynamic light source. 
+
 %TF: Do you have side-by-side comparison of the images from your approach and that of standard photon mapping?
 
 %TF: Do you have images showing the light source moving, perhaps with a final frame comparison with the
 %TF: result of standard photon mapping?
+%Steve: done
+
