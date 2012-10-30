@@ -8,12 +8,15 @@ In the first 2 sections of this chapter, we will present an overview on our appr
 
 As described in chapter 2, we build a global kd-tree as the photon map for irradiance estimation. However, the global photon map is rebuilt from scratch every frame, this process is time consuming due to the complexity of kd-tree building algorithm on GPUs and can be avoided.
 
-Instead of building a global kd-tree for photons, we re-use the same kd-tree for the geometric objects (triangles) which are static and associate the geometry and the photons data for efficient KNN search and update for dynamic scene.
+Instead of building a global kd-tree for photons, we re-use the same kd-tree for the geometric objects (triangles) for efficient  
+radiance estimation using KNN search having one kd-tree organizes the spatial information of both geometric objects and photons distribution in the scene. Similar to the way how triangles data associates with kd-tree leaf node, we create a new structure to store both photons and kd-tree leaf nodes data to enable us quickly performing the photons search with kd-tree traversal algorithm   and update the photon data in this structure without rebuild a separate kd-tree for photons. 
+ 
 % TF: The last part of this sentence is a bit confusing. What is meant by "associate"?
+% Steve: done
 
 For each frame, the photons are shot from the light source and stored in an array, then we build the kd-tree for the geometry objects if it is required, for the scenes that don't include animated objects we will skip this process. Given the photons data in the scene and the built kd-tree for geometry, we build our data structure, compress the memory bind it to the texture memory for a better memory accessing performance. 
 % TF: This last sentence is confusing. Perhaps break into two sentences and be clearer.
-In rendering phase, instead of using photon map for radiance estimation, we use the kd-tree and our photon queue to perform the KNN search.
+In rendering phase, instead of using another kd-tree for a global photon map for radiance estimation, we use the kd-tree and our photon queue to perform the KNN search. Updating of the kd-tree for scene is not required since it is static, therefore we only need to perform a traversal, when the leaf nodes are reached, we will have the access to the photons associated with this node, utilizing two indices on the array to indicate the range of current frame's photons, we can directly perform a photons search. 
 
 The update process of photons queue is straightforward. It depends on the photon data from the previous frames. Here we keep track of all the photons data of a range of frames with a pair of indices, the indices can be updated and maintained efficiently. 
 
@@ -72,8 +75,10 @@ Rendering with our data structure does not differ much from the standard photon 
 
 The kd-tree data should be carefully organized when implemented with CUDA to improve traversal performance. In \ref{subsec:kdtree_construction}, we have already described the kd-tree building algorithm introduced in \cite{Zhou2008}, but some of the details that are critical to the program's overall performance still need to be discussed here.
 
-The final node list generated when the kd-tree is built is not sufficient for fast traversal algorithm, since it contains too much useless information and will hit the performance since it is not friendly to cache pre-fetch. 
+The final node list generated when the kd-tree is built is not sufficient for fast traversal algorithm, since it contains too much useless information. This is not friendly to cache pre-fetch. Every time when we are trying to access the memory of next kd-tree nodes data, the memory next to the location we access to will be pre-fetched to the high speed on-chip cache for better performance. If the kd-tree nodes data is not compact, the cache will miss. 
+ 
 %TF: Define "cache pre-fetch"
+% Steve: done
 Therefore we compress and re-organize the traversal related data of the kd-tree nodes to reduce the memory access. The entire kd-tree is stored in a structure of several contiguous arrays. The structure is defined as following:
 
 % Code Snippet
