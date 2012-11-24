@@ -3,16 +3,14 @@
 %\section{Conclusions}
 In this research, we mainly focus on developing an improved photon mapping technique specifically for current generation GPU taking the advantage of the massive parallelized computation power. We started with introducing the theoretic basis of global illumination, then we reviewed the existing approaches published on the solving the problem, especially the photon mapping techniques exploited the parallelism with GPU. In our opinion, the existing method suffers from a deficiencies in how it handles the dynamic scene. After analyzing the weakness, we present a new approach trying to avoid another kd-tree construction exclusively for photon data and support an incremental updating scheme by associating the photons data with the kd-tree of the geometric objects and accumulating the photons from previous frames for K Nearest Neighbor photon searching. To proof our concept we implemented the test programs for both the existing and our new approach and carried out a series of benchmarks.
 
-% TF: Add a brief point-form summary of what is new/different about your approach.
-% Steve: done
-The major contribution of this thesis can be summerized as follows: 
+The major contribution of this thesis can be summarized as follows:
 
 \begin{itemize}
- 
-  \item Proposed a new data structure that maintians the kd-tree leaf nodes data and photons data for GPU-based photon mapping renderer and implemented the parallel contruction and incremental updating algorithm on this data structure allowing us to efficiently perform radiance estimation using photons. 
-  \item Improved the rendering performance for the scenes with dynamic light source by using the new data structure to avoid the overhead brought by re-constructing another kd-tree for photons every frame. 
-  \item Achieved the same image quality compares to the standard photon mapping technique. 
- 
+
+  \item Proposed a new data structure that maintains the kd-tree leaf nodes data and photons data for GPU-based photon mapping renderer and implemented the parallel construction and incremental updating algorithm on this data structure allowing us to efficiently perform radiance estimation using photons.
+  \item Improved the rendering performance for the scenes with dynamic light source by using the new data structure to avoid the overhead brought by re-constructing another kd-tree for photons every frame.
+  \item Add fewer photons to scene per frame with the same image quality compared to the standard photon mapping technique to achieve efficient rendering.
+
 \end{itemize}
 
 In our tests we observed that our approach was faster during construction and almost all the photon search tests among certain range of frames for a dynamic scene. Especially the construction time was greatly reduced compared to the old approach. Along with speed measurements, we also examined the memory consumption of both approaches. Our approach consumes more memory in rendering phase since the photon data from previous frames. But the memory consumption in the construction phase is much less than the existing method. Because we only require the construction of kd-tree for the scene. The memory consumption also strongly depends on the number of frames we want to store for the photons. Finally, we validate the quality of the rendered by directly visualizing the photons in the scene.

@@ -1,26 +1,28 @@
-\setcounter{figure}{0} 
+\setcounter{figure}{0}
 
 \chapter{A New Approach}
+
 
 In this chapter, we will present a novel approach for rendering a scene with dynamic light source efficiently. This method is based on the standard GPU-based photon mapping rendering system, using an augmented kd-tree data structure and localized updating algorithm for rendering.
 
 In the first 2 sections of this chapter, we will present an overview on our approach and a comprehensive description of the data structure that we use and related algorithms. Then we will look at some of the GPU implementation details.
 
+\section{Motivation}
+As described in chapter 2, we build a global kd-tree as the photon map for radiance estimation. However, this standard approach suffers from a main limitation that is rebuilding the global kd-tree for photons from scratch every frame, this process is time consuming due to the complexity of kd-tree building algorithm on GPUs and can be avoided.
+
 \section{Overview}
+Instead of building a global kd-tree for photons, we re-use the same kd-tree for the geometric objects (triangles) for efficient
+radiance estimation using KNN search having one kd-tree organizes the spatial information of both geometric objects and photons distribution in the scene. Similar to the way how triangle data is associated with a kd-tree leaf node, we create a new structure to store both photons and kd-tree leaf nodes data to enable us quickly performing the photons search with kd-tree traversal algorithm   and update the photon data in this structure without rebuilding a separate kd-tree for photons.
 
-As described in chapter 2, we build a global kd-tree as the photon map for irradiance estimation. However, the global photon map is rebuilt from scratch every frame, this process is time consuming due to the complexity of kd-tree building algorithm on GPUs and can be avoided.
-
-Instead of building a global kd-tree for photons, we re-use the same kd-tree for the geometric objects (triangles) for efficient  
-radiance estimation using KNN search having one kd-tree organizes the spatial information of both geometric objects and photons distribution in the scene. Similar to the way how triangles data associates with kd-tree leaf node, we create a new structure to store both photons and kd-tree leaf nodes data to enable us quickly performing the photons search with kd-tree traversal algorithm   and update the photon data in this structure without rebuild a separate kd-tree for photons. 
- 
 % TF: The last part of this sentence is a bit confusing. What is meant by "associate"?
 % Steve: done
+% TF2: OK, better. Should be OK.
 
-For each frame, the photons are shot from the light source and stored in an array, then we build the kd-tree for the geometry objects if it is required, for the scenes that don't include animated objects we will skip this process. Given the photons data in the scene and the built kd-tree for geometry, we build our data structure, compress the memory bind it to the texture memory for a better memory accessing performance. 
+For each frame, the photons are shot from the light source and stored in an array, then we build the kd-tree for the geometry objects if it is required, for the scenes that don't include animated objects we will skip this process. Given the photons data in the scene and the built kd-tree for geometry, we build our data structure, compress the memory to bind it to the texture memory for a better memory accessing performance.
 % TF: This last sentence is confusing. Perhaps break into two sentences and be clearer.
-In rendering phase, instead of using another kd-tree for a global photon map for radiance estimation, we use the kd-tree and our photon queue to perform the KNN search. Updating of the kd-tree for scene is not required since it is static, therefore we only need to perform a traversal, when the leaf nodes are reached, we will have the access to the photons associated with this node, utilizing two indices on the array to indicate the range of current frame's photons, we can directly perform a photons search. 
+In rendering phase, instead of using another kd-tree for a global photon map for radiance estimation, we use the kd-tree and our photon queue to perform the KNN search. Updating of the kd-tree for scene is not required since it is static, therefore we only need to perform a traversal, when the leaf nodes are reached, we will have the access to the photons associated with this node, utilizing two indices on the array to indicate the range of current frame's photons, we can directly perform a photons search.
 
-The update process of photons queue is straightforward. It depends on the photon data from the previous frames. Here we keep track of all the photons data of a range of frames with a pair of indices, the indices can be updated and maintained efficiently. 
+The update process of photons queue is straightforward. It depends on the photon data from the previous frames. Here we keep track of all the photons data of a range of frames with a pair of indices, the indices can be updated and maintained efficiently.
 
 Further details of the data structure and the update process will be presented in the following section.
 %Further details will be presented in following section.
@@ -59,7 +61,7 @@ Building the logical connection between photons and leaf nodes is simpler than b
 \subsection{Update}
 
 When a frame of image is rendered, new photons will be shot into the scene and be stored in the same global array with previous frames and for each leaf node, we need to keep track of the range of the photons that are active for rendering the next frame. For each leaf node, we maintain two pointers (indices), start and end index (in the sense of a circular array), indicating the range of the photons used for rendering. We move the end pointer forward when there are new photons arriving, move the start pointer forward when there are some old photons we need to discard. We use a pre-defined threshold from count to determine how many frames of photons data we want to make active, we keep accumulating the photons every frame until we reach that threshold value. When the threshold frame count
-is reached, we move forward the start pointer to avoid there more photons than the threshold. Since the number of photons per frame is known, the stride of moving start pointer can be calculated. 
+is reached, we move forward the start pointer to avoid there more photons than the threshold. Since the number of photons per frame is known, the stride of moving start pointer can be calculated.
 % Define the term "stride".
 However, in GPU implementation, the step in bytes used to increment the pointer is usually larger than the exact size of photons data we want to discard, since the memory will be padded when it is allocated for better memory accessing performance. Further details on the implementation and coding will be presented in section \ref{sec:impl_detials}.
 
@@ -77,10 +79,13 @@ Rendering with our data structure does not differ much from the standard photon 
 
 The kd-tree data should be carefully organized when implemented with CUDA to improve traversal performance. In \ref{subsec:kdtree_construction}, we have already described the kd-tree building algorithm introduced in \cite{Zhou2008}, but some of the details that are critical to the program's overall performance still need to be discussed here.
 
-The final node list generated when the kd-tree is built is not sufficient for fast traversal algorithm, since it contains too much useless information. This is not friendly to cache pre-fetch. Every time when we are trying to access the memory of next kd-tree nodes data, the memory next to the location we access to will be pre-fetched to the high speed on-chip cache for better performance. If the kd-tree nodes data is not compact, the cache will miss. 
- 
+The final node list generated when the kd-tree is built is not sufficient for fast traversal algorithm, since it contains too much useless information. This is not friendly to cache pre-fetch. Every time when we are trying to access the memory of next kd-tree node's data, the memory next to the location we access to will be pre-fetched to the high speed on-chip cache for better performance. If the kd-tree nodes data is not compact, the instruction being executed will fail to read the data in the cache. 
+
 %TF: Define "cache pre-fetch"
 % Steve: done
+%TF2: OK, but now what do you mean by "the cache will miss"?
+% Steve: done
+
 Therefore we compress and re-organize the traversal related data of the kd-tree nodes to reduce the memory access. The entire kd-tree is stored in a structure of several contiguous arrays. The structure is defined as following:
 
 % Code Snippet
@@ -165,10 +170,57 @@ The connection between kd-tree leaf nodes and photons data is stored similarly t
 
 In algorithm \ref{algo:build_kdleaf_photons}, two major pieces of input data are required, the kd-tree data constructed for the scene and the photons data shot in the scene. The photons data is updated every frame by inserting new photons into a large chunk of buffer resides in GPU memory. Similar to the organization of underlying triangle data for kd-tree nodes, the memory for each frame of photons is aligned to a fixed size to enable coalesced memory access which may improve the performance considerably. This is one of the most important good practices for CUDA programming, because if the threads in a block are accessing consecutive memory locations, then all the accesses are combined into a single request by the hardware. However, organizing data in this way will bring extra complexity for implementation because we have to keep track of the locations of beginning of next valid chunk of data for data accessing and there will be holes contained in the whole data array. Therefore move the pointer from \(i\)th frame to \(i+1\) frame requires increasing the pointer by maximum size of memory of \(i\)th frame which is aligned to a fixed size.
 
-We firstly mark the leaf nodes from the input kd-tree data, given the data definition described in the section \ref{subsec:data_org}, we only need to look at all the nodes and test if the MSB of the node's index is set. The indices of nodes can be retrieved from the kd-tree data. We store the result of marks in an array with the same number of elements as number of kd-tree nodes, the result will be 1 for a leaf node and 0 otherwise. The number of leaf nodes can be calculated by performing a data parallel reduction on this array. In order to store the indices of leaf nodes into an array of our data structure, we use another temporary local array and fill it with identity values \( (0, 1, 2 ... n-1) \), where \(n\) equals to the total count of kd-tree nodes, then we use the marks of leaf nodes as a filter to select the leaf nodes by performing an array multiplication for each elements on these two arrays, lastly we need a data parallel algorithm, compact, to remove all the invalid values (0s) from the result of previous step and store the result.
+Before going to the description of the algorithm \ref{algo:build_kdleaf_photons}, we will give an overview on the fundamental parallel algorithm which are serving as the building blocks of parallel application, then we will see the applications of these parallel algorithms with the description of our algorithm. 
+\subsubsection{Parallel Reduction} 
+Parallel reduction is a common data parallel algorithm that generates a single result value from many parallel threads. It can be illustrated with the figure \ref{fig:parallel_reduction}: 
 
-Our goal is that connect photons with kd-tree leaf nodes so that we can easily find the photons according to the indices of leaf nodes. So we need to classify the photons into an array with the same order of the indices of leaf nodes. For example, the \(a\)th leaf node associates with a range of photons [\(i, ..., i + n\)]. Firstly, we launch a kernel program on all leaf nodes performing the intersection detections between the bounding box and point on all of photons, if the photon is contained in a certain leaf node, then we store the indices of photons. 
-% I think you need to explain what is a kernel program first, and how it works.
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=0.7\textwidth]{imgs/reduction.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Parallel Reduction]{Parallel reduction using "+" operator. }
+    \label{fig:parallel_reduction}
+\end{figure} 
+
+\subsubsection{Parallel Compact} 
+Another common algorithm is parallel compact, the results are output per thread. It is often used to remove the null elements. It can be illustrated with the figure \ref{fig:parallel_compact}: 
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=0.7\textwidth]{imgs/compact.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Parallel Compact]{Parallel compact to remove null elements. }
+    \label{fig:parallel_compact}
+\end{figure} 
+
+We firstly mark the leaf nodes from the input kd-tree data, given the data definition described in the section \ref{subsec:data_org}, we only need to look at all the nodes and test if the MSB of the node's index is set. The indices of nodes can be retrieved from the kd-tree data. We store the result of marks in an array with the same number of elements as number of kd-tree nodes, the result will be 1 for a leaf node and 0 otherwise. The number of leaf nodes can be calculated by performing a data parallel reduction on this array. In order to store the indices of leaf nodes into an array of our data structure, we use another temporary local array and fill it with identity values \( (0, 1, 2 ... n-1) \), where \(n\) equals to the total count of kd-tree nodes, then we use the marks of leaf nodes as a filter to select the leaf nodes by performing an array multiplication for each elements on these two arrays, lastly we need a data parallel algorithm, compact, to remove all the invalid values (0s) from the result of previous step and store the result. The entire process can be illustrated with the following figure \ref{fig:parallel_find_leafs} and \ref{fig:parallel_find_leafs_2}.
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{imgs/parallel_find_leafs.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Find number of leaf nodes in parallel]{Find number of leaf nodes using parallel reduction.}
+    \label{fig:parallel_find_leafs}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{imgs/parallel_find_leafs_2.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Find indices of leaf nodes in parallel]{Find indices of leaf nodes in parallel.}
+    \label{fig:parallel_find_leafs_2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{imgs/photons_box_intersection.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Photons-box intersection in parallel]{Photons-box intersection tests in parallel.}
+    \label{fig:photons_box_intersection}
+\end{figure}
+
+
+Our goal is that connect photons with kd-tree leaf nodes so that we can easily find the photons according to the indices of leaf nodes. So we need to classify the photons into an array with the same order of the indices of leaf nodes. For example, the \(a\)th leaf node associates with a range of photons [\(i, ..., i + n\)]. Firstly, we launch a kernel program on all leaf nodes performing the intersection detections between the bounding box and point on all of photons, if the photon is contained in a certain leaf node, then we store the indices of photons, figure \ref{fig:photons_box_intersection} illustrates the process. 
 
 The data structure used to store photons for kd-tree leaf nodes works in the similar way to a circular buffer. We store number of frames of photons in a contiguous buffer. The start and end pointer (indices) indicate a range of frames of photons that is valid for rendering this frame. The start pointer points to the first photons of first active frame and the end pointer points to the first photon of the last active frame. We have a frame counter indicating the number of frames we have in the range, therefore we can detect if the buffer is full by compare the frame counter and max frames capacity.
 
@@ -195,7 +247,15 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 	\label{algo:render_kdleaf_photons}
 \end{algorithm}
 
-Algorithm \ref{algo:render_kdleaf_photons} shows the main framework of estimating the radiance at a query point in parallel. Each CUDA thread works on one query point. The key part of this computation is performing KNN range search around the query point with the kd-tree and the photons queue as input. The KNN range search function sums up all the power(flux) of photons and output the irradiance by dividing the flux by the area of circle centered at the query with a predefined radiance.
+Algorithm \ref{algo:render_kdleaf_photons} shows the main framework of estimating the radiance at a query point in parallel. Each CUDA thread works on one query point, see figure \ref{pixel_parallel}. The key part of this computation is performing KNN range search around the query point with the kd-tree and the photons queue as input. The KNN range search function sums up all the power(flux) of photons and output the irradiance by dividing the flux by the area of circle centered at the query with a predefined radiance.
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{imgs/pixel_parallel.pdf}}
+    \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+    \caption[Pixels and CUDA threads]{Each CUDA thread works on one query point.}
+    \label{fig:pixel_parallel}
+\end{figure}
 
 \begin{algorithm}
 	\SetAlgoLined

@@ -18,7 +18,8 @@
 \usepackage{comment}
 
 \author{Guangfu Shi}
-\title{Efficient Rendering with Dynamic Lighting Using Photons Queue and Incremental Update Algorithm}
+\title{Efficient Rendering of Scenes with Dynamic Lighting
+             Using a Photons Queue and Incremental Update Algorithm}
 \degree{Master of Computer Science}
 \dept{Computer Science}       						% default is Comp.Sci.
 
@@ -54,10 +55,21 @@
  }
 
 \begin{document}
- 
+
 \begin{abstract}
 
-Photon mapping is a popular extension to the classic ray tracing algorithm in the field of realistic image synthesis. Moreover  it is benefit from the massive parallelism computation power brought by the recent development of graphics processor hardware and programming model. However rendering the scenes with dynamic lights still greatly limits the performance due to the re-construction of kd-tree for the photons. We developed a novel approach based on the idea that storing the photons data with kd-tree leaf nodes data and implemented new incremental update scheme to improve the performance for dynamic lighting. The implementation is GPU-based and fully paralleled. A series of benchmarks with existing GPU photon mapping technique is carried our to evaluate our approach and our new technique is shown to be faster when handling the dynamic lighted scenes than the existing technique while having the same image quality. 
+Photon mapping is a popular extension to the classic ray tracing algorithm in the field
+of realistic image synthesis. Moreover, it benefits from the massive parallelism
+computational power brought by recent developments in graphics processor hardware and
+programming models. However rendering the scenes with dynamic lights still greatly limits
+the performance due to the re-construction at each rendered frame of a kd-tree for the
+photons. We developed a novel approach based on the idea that storing the photons data
+along with the kd-tree leaf nodes data and implemented new incremental update scheme to
+improve the performance for dynamic lighting. The implementation is GPU-based and fully
+parallelized. A series of benchmarks with the prevalent existing GPU photon mapping
+technique is carried out to evaluate our approach. Our new technique is shown to be
+faster when handling scenes with dynamic lights than the existing technique while having
+the same image quality.
 
 \end{abstract}
 
@@ -114,7 +126,7 @@ First of all, I would like to thank my supervisor, Dr.~Thomas Fevens for his adv
 %\include{appendix}				
 %-------------------------
 
-\bibliographystyle{plainnat} 
+\bibliographystyle{plainnat}
 \bibliography{refs}
 
 \end{spacing}
