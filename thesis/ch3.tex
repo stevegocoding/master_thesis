@@ -2,11 +2,11 @@
 
 \chapter{A New Approach}
 
-
 In this chapter, we will present a novel approach for rendering a scene with dynamic light source efficiently. This method is based on the standard GPU-based photon mapping rendering system, using an augmented kd-tree data structure and localized updating algorithm for rendering.
 
 In the first 2 sections of this chapter, we will present an overview on our approach and a comprehensive description of the data structure that we use and related algorithms. Then we will look at some of the GPU implementation details.
 
+% Steve final changes
 \section{Motivation}
 As described in chapter 2, we build a global kd-tree as the photon map for radiance estimation. However, this standard approach suffers from a main limitation that is rebuilding the global kd-tree for photons from scratch every frame, this process is time consuming due to the complexity of kd-tree building algorithm on GPUs and can be avoided.
 
@@ -170,6 +170,7 @@ The connection between kd-tree leaf nodes and photons data is stored similarly t
 
 In algorithm \ref{algo:build_kdleaf_photons}, two major pieces of input data are required, the kd-tree data constructed for the scene and the photons data shot in the scene. The photons data is updated every frame by inserting new photons into a large chunk of buffer resides in GPU memory. Similar to the organization of underlying triangle data for kd-tree nodes, the memory for each frame of photons is aligned to a fixed size to enable coalesced memory access which may improve the performance considerably. This is one of the most important good practices for CUDA programming, because if the threads in a block are accessing consecutive memory locations, then all the accesses are combined into a single request by the hardware. However, organizing data in this way will bring extra complexity for implementation because we have to keep track of the locations of beginning of next valid chunk of data for data accessing and there will be holes contained in the whole data array. Therefore move the pointer from \(i\)th frame to \(i+1\) frame requires increasing the pointer by maximum size of memory of \(i\)th frame which is aligned to a fixed size.
 
+% Steve final changes
 Before going to the description of the algorithm \ref{algo:build_kdleaf_photons}, we will give an overview on the fundamental parallel algorithm which are serving as the building blocks of parallel application, then we will see the applications of these parallel algorithms with the description of our algorithm. 
 \subsubsection{Parallel Reduction} 
 Parallel reduction is a common data parallel algorithm that generates a single result value from many parallel threads. It can be illustrated with the figure \ref{fig:parallel_reduction}: 
@@ -195,6 +196,7 @@ Another common algorithm is parallel compact, the results are output per thread.
 
 We firstly mark the leaf nodes from the input kd-tree data, given the data definition described in the section \ref{subsec:data_org}, we only need to look at all the nodes and test if the MSB of the node's index is set. The indices of nodes can be retrieved from the kd-tree data. We store the result of marks in an array with the same number of elements as number of kd-tree nodes, the result will be 1 for a leaf node and 0 otherwise. The number of leaf nodes can be calculated by performing a data parallel reduction on this array. In order to store the indices of leaf nodes into an array of our data structure, we use another temporary local array and fill it with identity values \( (0, 1, 2 ... n-1) \), where \(n\) equals to the total count of kd-tree nodes, then we use the marks of leaf nodes as a filter to select the leaf nodes by performing an array multiplication for each elements on these two arrays, lastly we need a data parallel algorithm, compact, to remove all the invalid values (0s) from the result of previous step and store the result. The entire process can be illustrated with the following figure \ref{fig:parallel_find_leafs} and \ref{fig:parallel_find_leafs_2}.
 
+% Steve final changes
 \begin{figure}
     \centering
     \fbox{\includegraphics[width=\textwidth]{imgs/parallel_find_leafs.pdf}}
@@ -249,6 +251,7 @@ The data structure used to store photons for kd-tree leaf nodes works in the sim
 
 Algorithm \ref{algo:render_kdleaf_photons} shows the main framework of estimating the radiance at a query point in parallel. Each CUDA thread works on one query point, see figure \ref{pixel_parallel}. The key part of this computation is performing KNN range search around the query point with the kd-tree and the photons queue as input. The KNN range search function sums up all the power(flux) of photons and output the irradiance by dividing the flux by the area of circle centered at the query with a predefined radiance.
 
+% Steve final changes
 \begin{figure}
     \centering
     \fbox{\includegraphics[width=\textwidth]{imgs/pixel_parallel.pdf}}
